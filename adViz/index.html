@@ -3,6 +3,25 @@
   <head>
     <meta charset="utf-8">
     <title>Test</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- https://developers.google.com/maps/documentation/javascript/adding-a-google-map#page -->
+    <script>
+      // Initialize and add the map
+      function initMap() {
+        // The location of Berlin Mitte
+        const mitte = { lat: 	52.531677, lng:	13.381777 };
+        // The map, centered at Uluru
+        const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 12,
+          center: mitte,
+        });
+        // The marker, positioned at Berlin Mitte
+        const marker = new google.maps.Marker({
+          position: mitte,
+          map: map,
+        });
+      }
+    </script>
   </head>
   <body>
     <div class="">
@@ -15,8 +34,39 @@
           <label for="password">Password: </label>
           <input type="password" id="passwordID" name="password" required>
         </div>
-        <button type="submit" name="login">Login</button>
+        <button type="submit" name="login-button">Login</button>
       </form>
+    </div>
+    <hr>
+    <div class="">
+      <div class="">
+          <button type="button" name="show-my-contacts-button">
+            Show my contacts
+          </button>
+          <button type="button" name="show-all-contacts-button">
+            Show all contacts
+          </button>
+          <button type="button" name="add-new-contacts-button">
+            Add new contacts
+          </button>
+      </div>
+      <div class="">
+        <ul>
+          <li>Address 1</li>
+          <li>Address 2</li>
+          <li>Address 3</li>
+        </ul>
+      </div>
+      <div class="">
+        map
+        <div id="map"></div>
+        <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+        <script
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY&callback=initMap&libraries=&v=weekly"
+          async>
+        </script>
+      </div>
+
     </div>
   </body>
 </html>
