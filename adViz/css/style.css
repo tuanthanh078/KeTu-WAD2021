@@ -1,7 +1,38 @@
 /* Set the size of the div element that contains the map */
+*{
+	font-family: Arial, Sans-Serif;
+}
+
+.contact-button{
+	width: 30%;
+	padding: 10px;
+	margin-left: 1.5%;
+	margin-right: 1.5%;
+	margin-bottom: 1%;
+	margin-top: 1%;
+}
+
+.form-label{
+	padding-bottom: 10px;
+}
+
+.login-screen{
+	margin: auto;
+	text-align: center;
+}
+
+.addresses{
+	float: left;
+	/* Same height as map */
+	height: 400px;
+	/* 1-width of map */
+	width: 25%;
+}
+
 #map {
+  /* Fixed map height 400px */
   height: 400px;
-  /* The height is 400 pixels */
-  width: 100%;
   /* The width is the width of the web page */
+  width: 75%;
+  margin-left: 25%;
 }

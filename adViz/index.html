@@ -25,12 +25,12 @@
   </head>
   <body>
     <div class="login-screen">
-      <form class="" action="index.html" method="post">
-        <div class="">
+      <form action="index.html" method="post">
+        <div class="form-label">
           <label for="username">Username: </label>
           <input type="text" id="usernameID" name="username" required>
         </div>
-        <div class="">
+        <div class="form-label">
           <label for="password">Password: </label>
           <input type="password" id="passwordID" name="password" required>
         </div>
@@ -40,32 +40,29 @@
     <hr>
     <div class="main-screen">
       <div class="">
-          <button type="button" name="show-my-contacts-button">
+          <button type="button" class="contact-button" name="show-my-contacts-button">
             Show my contacts
           </button>
-          <button type="button" name="show-all-contacts-button">
+          <button type="button" class="contact-button" name="show-all-contacts-button">
             Show all contacts
           </button>
-          <button type="button" name="add-new-contacts-button">
-            Add new contacts
+          <button type="button" class="contact-button" name="add-new-contact-button">
+            Add new contact
           </button>
       </div>
-      <div class="">
+      <div class="addresses">
         <ul>
           <li>Address 1</li>
           <li>Address 2</li>
           <li>Address 3</li>
         </ul>
       </div>
-      <div class="">
-        map
-        <div id="map"></div>
-        <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-        <script
-          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY&callback=initMap&libraries=&v=weekly"
-          async>
-        </script>
-      </div>
+      <div id="map"></div>
+      <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+      <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY&callback=initMap&libraries=&v=weekly"
+        async>
+      </script>
     </div>
     <hr>
   </body>
