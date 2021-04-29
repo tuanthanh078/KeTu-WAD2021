@@ -27,19 +27,27 @@
     <div class="login-screen">
       <form action="index.html" method="post">
         <div class="form-label">
-          <label for="username">Username: </label>
-          <input type="text" id="usernameID" name="username" required>
+          <div class="label-field">
+            <label for="username">Username: </label>
+          </div>
+          <div class="input-field">
+            <input type="text" id="usernameID" name="username" required>
+          </div>
         </div>
         <div class="form-label">
-          <label for="password">Password: </label>
-          <input type="password" id="passwordID" name="password" required>
+          <div class="label-field">
+            <label for="password">Password: </label>
+          </div>
+          <div class="input-field">
+            <input type="password" id="passwordID" name="password" required>
+          </div>
         </div>
         <button type="submit" name="login-button">Login</button>
       </form>
     </div>
     <hr>
     <div class="main-screen">
-      <div class="">
+      <div class="button-bar">
           <button type="button" class="contact-button" name="show-my-contacts-button">
             Show my contacts
           </button>
@@ -50,11 +58,11 @@
             Add new contact
           </button>
       </div>
-      <div class="addresses">
-        <ul>
-          <li>Address 1</li>
-          <li>Address 2</li>
-          <li>Address 3</li>
+      <div class="address-bar">
+        <ul class="address-list">
+          <li class="address">Treskowallee 8, 10318 Berlin</li>
+          <li class="address">Wilhelminenhofstraße 75A, 12459 Berlin</li>
+          <li class="address">Straße des 17. Juni 135, 10623 Berlin</li>
         </ul>
       </div>
       <div id="map"></div>
