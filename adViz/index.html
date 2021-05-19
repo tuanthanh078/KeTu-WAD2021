@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>AdViz</title>
     <link rel="stylesheet" href="css/stylesheet.css">
+    <script src="js/main.js" async defer></script>
     <!-- https://developers.google.com/maps/documentation/javascript/adding-a-google-map#page -->
     <script>
       // Initialize and add the map
@@ -25,8 +26,8 @@
   </head>
   <body>
 
-    <div class="form">
-      <form action="index.html" method="post">
+    <div id='login-screen' class="form">
+      <form id='login-form' action="index.html" method="post">
         <div class="form-row">
             <label for="username" class="form-label">Username: </label>
             <input type="text" id="usernameID" name="username" required>
@@ -35,13 +36,17 @@
             <label for="password" class="form-label">Password: </label>
             <input type="password" id="passwordID" name="password" required>
         </div>
-        <button type="submit" name="login-button">Login</button>
+        <button type="submit" id="login-button">Login</button>
       </form>
     </div>
 
-    <hr>
-
-    <div class="main-screen">
+    <div id="header-bar">
+      <div id="header-info">
+      </div>
+      <button type="button" id="logout-button" name="logout-button">Logout</button>
+    </div>
+    
+    <div id="main-screen" class="main-screen">
       <div class="button-bar">
           <button type="button" class="contact-button" name="show-my-contacts-button">
             Show my contacts
@@ -68,9 +73,8 @@
       </script>
     </div>
 
-    <hr>
 
-    <div class="form">
+    <div id="add-screen" class="form">
     	<form action="index.html" method="post">
 
     		<div class="form-row">
@@ -126,9 +130,8 @@
         </form>
     </div>
 
-	<hr>
 
-	<div class="form">
+	<div id="update-screen" class="form">
 		<form action="index.html" method="post">
 
 			<div class="form-row">
@@ -189,3 +192,4 @@
 
   </body>
 </html>
+
