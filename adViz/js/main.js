@@ -5,6 +5,7 @@ const logoutButton = document.getElementById("logout-button");
 const header = document.getElementById("header-bar");
 const headerInfo = document.getElementById("header-info");
 const mainScreen = document.getElementById("main-screen");
+const addressList = document.getElementById('address-list');
 const addScreen = document.getElementById("add-screen");
 const updateScreen = document.getElementById("update-screen");
 
@@ -23,6 +24,7 @@ function Contact(firstname, lastname, street,
   this.state = state;
   this.country = country;
   this.isPrivate = isPrivate;
+  this.fullname = firstname + " " + lastname;
 }
 
 var contact1 = new Contact("A1", "B1", "Treskowallee", "8", "10318",
@@ -41,6 +43,8 @@ var normalo = {username: "normalo",
                 password: "normalo",
                 contacts: [contact3, contact4]};
 
+var currUser;
+
 loginButton.addEventListener("click", (e) => {
   e.preventDefault();
   const username = loginForm.username.value;
@@ -55,6 +59,8 @@ loginButton.addEventListener("click", (e) => {
     headerInfo.innerHTML = "Hallo admina!";
     alert("You have successfully logged in.");
     isAdmina = true;
+    currUser = admina;
+    updateAddressList();
   } else if (username === normalo.username &&
               password === normalo.password &&
               !isLoggedIn) {
@@ -63,6 +69,8 @@ loginButton.addEventListener("click", (e) => {
     mainScreen.style.display = "block";
     header.style.display = "block";
     headerInfo.innerHTML = "Hallo normalo!";
+    currUser = normalo;
+    updateAddressList();
     alert("You have successfully logged in.");
   } else {
     alert("Wrong username or password!");
@@ -76,3 +84,10 @@ logoutButton.addEventListener("click", (e) => {
   header.style.display = "none";
   loginScreen.style.display = "block";
 });
+
+function updateAddressList() {
+ for (let contact of currUser.contacts) {
+   addressList.innerHTML += '<li class="address">' +
+                            contact.fullname  + '</li>';
+ }
+}
