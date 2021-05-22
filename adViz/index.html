@@ -5,24 +5,6 @@
     <title>AdViz</title>
     <link rel="stylesheet" href="css/stylesheet.css">
     <script src="js/main.js" async defer></script>
-    <!-- https://developers.google.com/maps/documentation/javascript/adding-a-google-map#page -->
-    <script>
-      // Initialize and add the map
-      function initMap() {
-        // The location of Berlin Mitte
-        const mitte = { lat: 	52.531677, lng:	13.381777 };
-        // The map, centered at Uluru
-        const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 12,
-          center: mitte,
-        });
-        // The marker, positioned at Berlin Mitte
-        const marker = new google.maps.Marker({
-          position: mitte,
-          map: map,
-        });
-      }
-    </script>
   </head>
   <body>
 
