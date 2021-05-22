@@ -38,14 +38,13 @@ var contact3 = new Contact("A3", "B3", "Straße des 17. Juni", "135", "10623",
                           "Berlin", "Berlin", "Germany", true);
 var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
                             "Berlin", "Berlin", "Germany", false);
-
 var admina = {username: "admina",
               password: "admina",
               contacts: [contact1, contact2]};
 var normalo = {username: "normalo",
                 password: "normalo",
                 contacts: [contact3, contact4]};
-
+var isUpdated = false;
 var currUser;
 
 loginButton.addEventListener("click", (e) => {
@@ -63,8 +62,11 @@ loginButton.addEventListener("click", (e) => {
     alert("You have successfully logged in.");
     isAdmina = true;
     currUser = admina;
-    updateAddressList();
-    updateMap();
+    if (!isUpdated) {
+      updateAddressList();
+      updateMap();
+      isUpdated = true;
+    }
   } else if (username === normalo.username &&
               password === normalo.password &&
               !isLoggedIn) {
@@ -74,7 +76,11 @@ loginButton.addEventListener("click", (e) => {
     header.style.display = "block";
     headerInfo.innerHTML = "Hallo normalo!";
     currUser = normalo;
-    updateAddressList();
+    if (!isUpdated) {
+      updateAddressList();
+      updateMap();
+      isUpdated = true;
+    }
     alert("You have successfully logged in.");
   } else {
     alert("Wrong username or password!");
