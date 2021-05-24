@@ -6,8 +6,16 @@ const header = document.getElementById("header-bar");
 const headerInfo = document.getElementById("header-info");
 const mainScreen = document.getElementById("main-screen");
 const addressList = document.getElementById('address-list');
+
 const addScreen = document.getElementById("add-screen");
-const updateScreen = document.getElementById("update-screen");
+const addForm = document.getElementById("add-form");
+const addNewButton = document.getElementById("add-new-button");
+const addButtons = document.getElementById("add-buttons");
+addButtons.remove();
+const updateButtons = document.getElementById("update-buttons");
+updateButtons.remove();
+const ownerSelect = document.getElementById("owner-select");
+
 var map;
 var mitte;
 
@@ -44,10 +52,47 @@ function User(username, password, contacts, isAdmin){
 	this.password = password;
 	this.contacts = contacts;
 	this.isAdmin = isAdmin;
+	
+	var option = document.createElement("option");
+	option.appendChild(document.createTextNode(username));
+	addForm.owner.appendChild(option);
 }
 	
 var admina = new User("admina", "admina", [contact1, contact2], true);
 var normalo = new User("normalo", "normalo", [contact3, contact4], false);
+
+//Fasst die gegebenen Elemente zu einem Formular zusammen, in dem alle gegebenen
+//Input Felder required sind, damit der submit button aktiviert ist
+function createForm(requiredFields, submitButton){
+	submitButton.disabled = true;
+	
+	let valid = [false];
+	for(let i = 1; i<requiredFields.length; i++){
+		valid.push(false);
+	}
+	
+	for(let i = 0; i<requiredFields.length; i++){
+		requiredFields[i].addEventListener("keyup", (e) => {
+			if(requiredFields[i].checkValidity()){
+				valid[i] = true;
+			}else{
+				valid[i] = false;
+			}
+			
+			for(let j = 0; j<requiredFields.length; j++){
+				if(valid[j] == false){
+					submitButton.disabled = true;
+					break;
+				}
+				if(j == requiredFields.length-1){
+					submitButton.disabled = false;
+				}
+			}
+		});
+	}
+}
+
+createForm([loginForm.username, loginForm.password],loginButton);
 
 var users = [admina, normalo];
 
@@ -85,13 +130,18 @@ loginButton.addEventListener("click", (e) => {
 
 			//Zeige Header mit Begruessung und Logout Button
 			header.style.display = "block";
-			headerInfo.innerHTML = "Hallo "+currUser.username+"!";
+			headerInfo.innerHTML = "Hello "+currUser.username+"!";
 			
 			//Update Karte wenn noetig
 			if(!isUpdated){
 				updateAddressList();
 				updateMap();
 				isUpdated = true;
+			}
+			
+			//Entferne Admin Felder fuer Normalo
+			if(!currUser.isAdmin){
+				ownerSelect.remove();
 			}
 			
 			break;
@@ -149,6 +199,13 @@ logoutButton.addEventListener("click", (e) => {
   mainScreen.style.display = "none";
   header.style.display = "none";
   loginScreen.style.display = "block";
+
+	if(!currUser.isAdmin){
+		addForm.insertBefore(ownerSelect, document.getElementById("private-row"));
+	}
+	
+	loginForm.password.value = "";
+	loginButton.disabled = true;
 });
 
 function updateAddressList() {
@@ -156,6 +213,11 @@ function updateAddressList() {
    addressList.innerHTML += '<li class="address">' +
                             contact.fullname  + '</li>';
  }
+}
+
+//Adds the specified contact to the address list
+function addToAddressList(contact){
+	addressList.innerHTML += '<li class="address">' + contact.fullname + '</li>';
 }
 
 function initMap() {
@@ -204,3 +266,54 @@ function updateMap() {
     xhr.send();
   }
 }
+
+addNewButton.addEventListener("click", (e) => {
+	
+	mainScreen.style.display = "none";
+	header.style.display = "none";
+	
+	//Prepare and show addScreen
+	addScreen.appendChild(addButtons);
+	addButtons.form = "add-form";
+	addScreen.style.display = "block";
+	
+});
+
+addButtons.addEventListener("click", (e) => {
+	
+	let owner = currUser;
+	if(currUser.isAdmin){
+		let ownerInput = addForm.owner.value;
+		for(let user of users){
+			if(user.username = ownerInput){
+				owner = user;
+				break;
+			}
+		}
+	}
+	
+	let contactInput = new Contact(
+			addForm.first-name.value,
+			addForm.last-name.value,
+			addForm.street.value,
+			addForm.streetnr.value,
+			addForm.zip.value,
+			addForm.city.value,
+			addForm.state.value,
+			addForm.country.value,
+			addForm.private.value,	
+		);
+	
+	owner.contacts.push(contactInput);
+	
+	addScreen.style.display = "none";
+	mainScreen.style.display = "block";
+	header.style.display = "block";
+	
+	addToAddressList(contactInput);
+	updateMap();
+	
+	addButtons.remove();	
+});
+
+

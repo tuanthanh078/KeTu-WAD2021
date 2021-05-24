@@ -36,7 +36,7 @@
           <button type="button" class="contact-button" name="show-all-contacts-button">
             Show all contacts
           </button>
-          <button type="button" class="contact-button" name="add-new-contact-button">
+          <button type="button" id="add-new-button" class="contact-button" name="add-new-contact-button">
             Add new contact
           </button>
       </div>
@@ -57,7 +57,7 @@
 
 
     <div id="add-screen" class="form">
-    	<form action="index.html" method="post">
+    	<form action="index.html" method="post" id="add-form">
 
     		<div class="form-row">
             	<label for="first-name" class="form-label">First name: </label>
@@ -95,24 +95,29 @@
         		<input type="text" id="countryID" name="country">
         	</div>
 
-        	<div class="form-row">
+        	<div class="form-row" id="owner-select">
         		<label for="owner" class="form-label">Owner: </label>
         		<select id="ownerID" name="owner">
-        			<option>Self</option>
-        			<option>Normalo</option>
+        		
         		</select>
         	</div>
 
-        	<div class="form-row">
+        	<div class="form-row" id="private-row">
         		<label for="private" class="form-label">Private </label>
         		<input type="checkbox" id="privateID" name="private" checked>
         	</div>
 
-        	<button type="submit" name="add-button">Add</button>
+        	<button type="submit" name="add-button" id="add-buttons">Add</button>
+        	
+        	<div id="update-buttons">
+        		<button type="submit" name="apply-button">Apply</button>
+        		<button type="button" name="delete-button">Delete</button>
+        	</div>
         </form>
     </div>
 
 
+	<!--
 	<div id="update-screen" class="form">
 		<form action="index.html" method="post">
 
@@ -171,6 +176,7 @@
         	</div>
 		</form>
 	</div>
+	-->
 
   </body>
 </html>
