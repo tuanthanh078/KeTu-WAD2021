@@ -11,8 +11,8 @@ const updateScreen = document.getElementById("update-screen");
 var map;
 var mitte;
 
-var isLoggedIn = false;
-var isAdmina = false;
+// var isLoggedIn = false;
+// var isAdmina = false;
 
 function Contact(firstname, lastname, street,
                   streetnr, zip, city, state,
@@ -38,19 +38,74 @@ var contact3 = new Contact("A3", "B3", "Straße des 17. Juni", "135", "10623",
                           "Berlin", "Berlin", "Germany", true);
 var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
                             "Berlin", "Berlin", "Germany", false);
+
+function User(username, password, contacts, isAdmin){
+	this.username = username;
+	this.password = password;
+	this.contacts = contacts;
+	this.isAdmin = isAdmin;
+}
+	
+var admina = new User("admina", "admina", [contact1, contact2], true);
+var normalo = new User("normalo", "normalo", [contact3, contact4], false);
+
+var users = [admina, normalo];
+
+/* Alte user Initialisierung
 var admina = {username: "admina",
               password: "admina",
               contacts: [contact1, contact2]};
 var normalo = {username: "normalo",
                 password: "normalo",
                 contacts: [contact3, contact4]};
+*/
 var isUpdated = false;
 var currUser;
 
 loginButton.addEventListener("click", (e) => {
-  e.preventDefault();
-  const username = loginForm.username.value;
-  const password = loginForm.password.value;
+	e.preventDefault();
+	const username = loginForm.username.value;
+	const password = loginForm.password.value;
+	
+	let loginCorrect = false;
+  
+	for(let i = 0; i< users.length;i++){
+		if(username === users[i].username &&
+			password === users[i].password){
+			
+			//Setze Login war korrekt
+			loginCorrect = true;
+			
+			//Setze aktuellen User
+			currUser = users[i];	
+			
+			//Wechsel zu mainScreen
+			loginScreen.style.display = "none";
+			mainScreen.style.display = "block";		
+
+			//Zeige Header mit Begruessung und Logout Button
+			header.style.display = "block";
+			headerInfo.innerHTML = "Hallo "+currUser.username+"!";
+			
+			//Update Karte wenn noetig
+			if(!isUpdated){
+				updateAddressList();
+				updateMap();
+				isUpdated = true;
+			}
+			
+			break;
+		}
+	}
+	
+	if(loginCorrect){
+		alert("You have successfully logged in");
+	}else{
+		alert("Wrong username or password!");
+	}
+ 
+ /* Alte Nutzer Anmeldung
+  
   if (username === admina.username &&
       password === admina.password &&
         !isLoggedIn) {
@@ -85,11 +140,12 @@ loginButton.addEventListener("click", (e) => {
   } else {
     alert("Wrong username or password!");
   }
+ */
 });
 
 logoutButton.addEventListener("click", (e) => {
-  isLoggedIn = false;
-  isAdmina = false;
+  //isLoggedIn = false;
+  //isAdmina = false;
   mainScreen.style.display = "none";
   header.style.display = "none";
   loginScreen.style.display = "block";
