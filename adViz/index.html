@@ -30,10 +30,10 @@
 
     <div id="main-screen" class="main-screen">
       <div class="button-bar">
-          <button type="button" class="contact-button" name="show-my-contacts-button">
+          <button type="button" class="contact-button" name="show-my-contacts-button" id="show-my-button">
             Show my contacts
           </button>
-          <button type="button" class="contact-button" name="show-all-contacts-button">
+          <button type="button" class="contact-button" name="show-all-contacts-button" id="show-all-button">
             Show all contacts
           </button>
           <button type="button" id="add-new-button" class="contact-button" name="add-new-contact-button">
@@ -60,13 +60,13 @@
     	<form action="index.html" method="post" id="add-form">
 
     		<div class="form-row">
-            	<label for="first-name" class="form-label">First name: </label>
-           		<input type="text" id="first-nameID" name="first-name" required>
+            	<label for="firstname" class="form-label">First name: </label>
+           		<input type="text" id="first-nameID" name="firstname" required>
         	</div>
 
         	<div class="form-row">
-          		<label for="last-name" class="form-label">Last name: </label>
-          		<input type="text" id="last-nameID" name="last-name" required>
+          		<label for="lastname" class="form-label">Last name: </label>
+          		<input type="text" id="last-nameID" name="lastname" required>
         	</div>
 
         	<div class="form-row">
@@ -110,8 +110,8 @@
         	<button type="submit" name="add-button" id="add-buttons">Add</button>
         	
         	<div id="update-buttons">
-        		<button type="submit" name="apply-button">Apply</button>
-        		<button type="button" name="delete-button">Delete</button>
+        		<button type="submit" name="apply-button" id="apply-button">Apply</button>
+        		<button type="button" name="delete-button" id="delete-button">Delete</button>
         	</div>
         </form>
     </div>

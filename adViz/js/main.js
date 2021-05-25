@@ -13,6 +13,8 @@ const addNewButton = document.getElementById("add-new-button");
 const addButtons = document.getElementById("add-buttons");
 addButtons.remove();
 const updateButtons = document.getElementById("update-buttons");
+const updateButton = document.getElementById("apply-button");
+const deleteButton = document.getElementById("delete-button");
 updateButtons.remove();
 const ownerSelect = document.getElementById("owner-select");
 
@@ -37,8 +39,14 @@ function Contact(firstname, lastname, street,
   this.fullname = firstname + " " + lastname;
   this.address = street + " " + streetnr + " " + zip + " " + city;
 }
+function fullname(contact){
+	return contact.firstname + " " + contact.lastname;
+}
+function address(contact){
+	return contact.street + " " + contact.streetnr + " " + zip +" " + city;
+}
 
-var contact1 = new Contact("A1", "B1", "Treskowallee", "8", "10318",
+var contact1 = new Contact("Peter", "Peterson", "Treskowallee", "8", "10318",
                           "Berlin", "Berlin", "Germany", true);
 var contact2 = new Contact("A2", "B2", "Wilhelminenhofstraße", "75A", "12459",
                             "Berlin", "Berlin", "Germany", false);
@@ -63,47 +71,47 @@ var normalo = new User("normalo", "normalo", [contact3, contact4], false);
 
 //Fasst die gegebenen Elemente zu einem Formular zusammen, in dem alle gegebenen
 //Input Felder required sind, damit der submit button aktiviert ist
-function createForm(requiredFields, submitButton){
-	submitButton.disabled = true;
+function createForm(requiredFields, submitButtons){
+	for(let button of submitButtons){
+		button.disabled = true;
+	}
 	
-	let valid = [false];
-	for(let i = 1; i<requiredFields.length; i++){
-		valid.push(false);
+	for(let i = 0; i<requiredFields.length; i++){
+		requiredFields[i].valid = false;
 	}
 	
 	for(let i = 0; i<requiredFields.length; i++){
 		requiredFields[i].addEventListener("keyup", (e) => {
-			if(requiredFields[i].checkValidity()){
-				valid[i] = true;
-			}else{
-				valid[i] = false;
-			}
+			
+			requiredFields[i].valid = requiredFields[i].checkValidity();
 			
 			for(let j = 0; j<requiredFields.length; j++){
-				if(valid[j] == false){
-					submitButton.disabled = true;
+				if(requiredFields[j].valid == false){
+					for(let button of submitButtons){
+						button.disabled = true;
+					}
 					break;
 				}
 				if(j == requiredFields.length-1){
-					submitButton.disabled = false;
+					for(let button of submitButtons){
+						button.disabled = false;
+					}
 				}
 			}
 		});
 	}
 }
+function setValue(field, value){
+	field.value = value;
+	field.valid = field.checkValidity();
+}
 
-createForm([loginForm.username, loginForm.password],loginButton);
+
+createForm([loginForm.username, loginForm.password],[loginButton]);
+createForm([addForm.firstname, addForm.lastname, addForm.street, addForm.streetnr, addForm.zip, addForm.city],[addButtons,updateButton]);
 
 var users = [admina, normalo];
 
-/* Alte user Initialisierung
-var admina = {username: "admina",
-              password: "admina",
-              contacts: [contact1, contact2]};
-var normalo = {username: "normalo",
-                password: "normalo",
-                contacts: [contact3, contact4]};
-*/
 var isUpdated = false;
 var currUser;
 
@@ -132,9 +140,9 @@ loginButton.addEventListener("click", (e) => {
 			header.style.display = "block";
 			headerInfo.innerHTML = "Hello "+currUser.username+"!";
 			
-			//Update Karte wenn noetig
+			//Lade Karten Marker und Kontaktliste
 			if(!isUpdated){
-				updateAddressList();
+				reloadAddressListUser();
 				updateMap();
 				isUpdated = true;
 			}
@@ -153,44 +161,6 @@ loginButton.addEventListener("click", (e) => {
 	}else{
 		alert("Wrong username or password!");
 	}
- 
- /* Alte Nutzer Anmeldung
-  
-  if (username === admina.username &&
-      password === admina.password &&
-        !isLoggedIn) {
-    isLoggedIn = true;
-    loginScreen.style.display = "none";
-    mainScreen.style.display = "block";
-    header.style.display = "block";
-    headerInfo.innerHTML = "Hallo admina!";
-    alert("You have successfully logged in.");
-    isAdmina = true;
-    currUser = admina;
-    if (!isUpdated) {
-      updateAddressList();
-      updateMap();
-      isUpdated = true;
-    }
-  } else if (username === normalo.username &&
-              password === normalo.password &&
-              !isLoggedIn) {
-    isLoggedIn = true;
-    loginScreen.style.display = "none";
-    mainScreen.style.display = "block";
-    header.style.display = "block";
-    headerInfo.innerHTML = "Hallo normalo!";
-    currUser = normalo;
-    if (!isUpdated) {
-      updateAddressList();
-      updateMap();
-      isUpdated = true;
-    }
-    alert("You have successfully logged in.");
-  } else {
-    alert("Wrong username or password!");
-  }
- */
 });
 
 logoutButton.addEventListener("click", (e) => {
@@ -208,16 +178,100 @@ logoutButton.addEventListener("click", (e) => {
 	loginButton.disabled = true;
 });
 
-function updateAddressList() {
- for (let contact of currUser.contacts) {
-   addressList.innerHTML += '<li class="address">' +
-                            contact.fullname  + '</li>';
- }
+//Verstecke alle Kontakte dessen besitzer nicht der aktuelle Nutzer ist,
+//Wenn der Show my contacts Button gedrueckt wird
+document.getElementById("show-my-button").addEventListener("click",(e) => {
+	reloadAddressListUser();
+});
+
+//Verstecke 
+document.getElementById("show-all-button").addEventListener("click", (e) => {
+	reloadAddressListAll();
+});
+
+let userOnlyAddresses = true;
+
+function reloadAddressListUser() {
+	addressList.innerHTML = "";
+	for (let contact of currUser.contacts) {
+		addToAddressList(contact);
+	}
+	userOnlyAddresses = true;
 }
 
-//Adds the specified contact to the address list
+function reloadAddressListAll(){
+	reloadAddressListUser();
+	for (let user of users){
+		if(user !== currUser){
+			for( let contact of user.contacts){
+				if(contact.isPrivate == false){
+					addToAddressList(contact);
+				}	
+			}
+		}
+	}
+	userOnlyAddresses = false;
+}
+
+let selectedContact;
+
+//Fuegt den spezifizierten Kontakt zur Addressliste des MainScreens hinzu
+//Gegebebenen Falls wird der Bearbeiten Screen fuer den Kontakt freigeschaltet
 function addToAddressList(contact){
-	addressList.innerHTML += '<li class="address">' + contact.fullname + '</li>';
+	//addressList.innerHTML += '<li class="address">' + contact.fullname + '</li>';
+	let addressLi = document.createElement("li");
+	addressLi.innerHTML = fullname(contact);
+	addressLi.className = "address";
+	
+	if(currUser.isAdmin == true || (getOwner(contact).username === currUser.username)){
+	
+		//alert("Add listener for contact: "+contact.fullname+ ".");
+			
+		addressLi.addEventListener("click", (e) => {
+			
+			selectedContact = contact;
+			
+			updateButton.disabled = false;
+			addForm.appendChild(updateButtons);
+			
+			setValue(addForm.firstname, contact.firstname);
+			setValue(addForm.lastname, contact.lastname);
+			setValue(addForm.street, contact.street);
+			setValue(addForm.streetnr, contact.streetnr);
+			setValue(addForm.zip, contact.zip);
+			setValue(addForm.city, contact.city);
+			setValue(addForm.state, contact.state);
+			setValue(addForm.country, contact.country);
+			addForm.private.checked = contact.isPrivate;
+		
+			//Setzte den korrekten owner des ausgewaehlten Kontakts
+			if(currUser.isAdmin){
+				for(let i = 0; i<users.length; i++){
+					for(let userContact of users[i].contacts){
+						if(userContact === contact){
+							addForm.owner.selectedIndex = i;
+							break;
+						}
+					}
+				}
+			}
+		
+			mainScreen.style.display = "none";
+			header.style.display = "none";
+			addScreen.style.display = "block";
+		});
+	}
+	addressList.appendChild(addressLi);
+}
+
+function getOwner(contact){
+	for(let i = 0; i<users.length; i++){
+		for(let userContact of users[i].contacts){
+			if(userContact === contact){
+				return users[i];
+			}
+		}
+	}
 }
 
 function initMap() {
@@ -267,7 +321,54 @@ function updateMap() {
   }
 }
 
+function setMarker(contact){
+	var xhr = new XMLHttpRequest();
+	var url = "https://maps.googleapis.com/maps/api/geocode/json?";
+    url = url + "address=" + address(contact);
+    url = url +"&key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY";
+	xhr.open("GET", url, true);
+	// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
+	xhr.onerror = function(){
+		alert("Connecting to server with " + url + " failed!\n");
+		return false;
+	};
+	// diese Funktion wird ausgefuehrt, wenn die Anfrage erfolgreich war
+	xhr.onload = function(e){
+		var data = this.response;
+		var obj = JSON.parse(data);
+		console.log(obj);
+		if(this.status == 200){
+			if(obj.status == "ZERO_RESULTS"){
+				alert("The address could not be resolved");
+				return false;
+			}else{
+				const lat = obj.results[0].geometry.location.lat;
+				const lng = obj.results[0].geometry.location.lng;
+				const mkr = new google.maps.Marker({
+					position: {lat: lat, lng:	lng},
+            		map: map,
+				});
+				console.log (lat +", " + lng);
+			}
+		}else{
+			alert ("HTTP-status code was: " + obj.status);
+			return false;
+		}
+	}
+	xhr.send();
+}
+
 addNewButton.addEventListener("click", (e) => {
+
+	setValue(addForm.firstname, "");
+	setValue(addForm.lastname, "");
+	setValue(addForm.street, "");
+	setValue(addForm.streetnr, "");
+	setValue(addForm.zip, "");
+	setValue(addForm.city, "");
+	setValue(addForm.state, "");
+	setValue(addForm.country, "");
+	addForm.private.checked = true;
 	
 	mainScreen.style.display = "none";
 	header.style.display = "none";
@@ -293,8 +394,8 @@ addButtons.addEventListener("click", (e) => {
 	}
 	
 	let contactInput = new Contact(
-			addForm.first-name.value,
-			addForm.last-name.value,
+			addForm.firstname.value,
+			addForm.lastname.value,
 			addForm.street.value,
 			addForm.streetnr.value,
 			addForm.zip.value,
@@ -306,14 +407,59 @@ addButtons.addEventListener("click", (e) => {
 	
 	owner.contacts.push(contactInput);
 	
-	addScreen.style.display = "none";
-	mainScreen.style.display = "block";
-	header.style.display = "block";
-	
 	addToAddressList(contactInput);
 	updateMap();
 	
 	addButtons.remove();	
+	
+	addScreen.style.display = "none";
+	mainScreen.style.display = "block";
+	header.style.display = "block";
 });
 
+updateButton.addEventListener("click", (e) => {
+	
+	selectedContact.firstname = addForm.firstname.value;
+	selectedContact.lastname = addForm.lastname.value;
+	selectedContact.street = addForm.street.value;
+	selectedContact.streetnr = addForm.streetnr.value;
+	selectedContact.zip = addForm.zip.value;
+	selectedContact.city = addForm.city.value;
+	selectedContact.state = addForm.state.value;
+	selectedContact.country = addForm.country.value;
+	selectedContact.isPrivate = addForm.private.checked;
+	
+	if(userOnlyAddresses === true){
+		reloadAddressListUser();
+	}else{
+		reloadAddressListAll();
+	}
+	
+	updateButtons.remove();
+	
+	addScreen.style.display = "none";
+	mainScreen.style.display = "block";
+	header.style.display = "block";
+});
 
+deleteButton.addEventListener("click", (e) => {
+	let owner = getOwner(selectedContact);
+	for(let i = 0; i<owner.contacts.length; i++){
+		if(owner.contacts[i] == selectedContact){
+			owner.contacts.splice(i,1);
+		}
+	}
+	
+	if(userOnlyAddresses === true){
+		reloadAddressListUser();
+	}else{
+		reloadAddressListAll();
+	}
+	updateMap();
+	
+	updateButtons.remove();
+	
+	addScreen.style.display = "none";
+	mainScreen.style.display = "block";
+	header.style.display = "block";
+});
