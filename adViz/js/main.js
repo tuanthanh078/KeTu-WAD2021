@@ -16,6 +16,8 @@ const updateButtons = document.getElementById("update-buttons");
 const updateButton = document.getElementById("apply-button");
 const deleteButton = document.getElementById("delete-button");
 updateButtons.remove();
+const backButton = document.getElementById("back-button");
+backButton.remove();
 const ownerSelect = document.getElementById("owner-select");
 
 var map;
@@ -24,9 +26,24 @@ var mitte;
 // var isLoggedIn = false;
 // var isAdmina = false;
 
-function Contact(firstname, lastname, street,
-                  streetnr, zip, city, state,
-                  country, isPrivate) {
+function User(username, password/*, contacts*/, isAdmin){
+	this.username = username;
+	this.password = password;
+	//this.contacts = contacts;
+	this.isAdmin = isAdmin;
+	
+	var option = document.createElement("option");
+	option.appendChild(document.createTextNode(username));
+	addForm.owner.appendChild(option);
+}
+	
+var admina = new User("admina", "admina"/*, [contact1, contact2]*/, true);
+var normalo = new User("normalo", "normalo"/*, [contact3, contact4]*/, false);
+
+//Alle hardcoded nutzer (admina, normalo)
+var users = [admina, normalo];
+
+function Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner) {
   this.firstname = firstname;
   this.lastname = lastname;
   this.street = street;
@@ -36,38 +53,38 @@ function Contact(firstname, lastname, street,
   this.state = state;
   this.country = country;
   this.isPrivate = isPrivate;
-  this.fullname = firstname + " " + lastname;
-  this.address = street + " " + streetnr + " " + zip + " " + city;
+  this.markerGenerated = false;
+  this.owner = owner;
+  //Ersetzt durch methoden fullname(contact), und address(contact)
+  //this.fullname = firstname + " " + lastname;
+  //this.address = street + " " + streetnr + " " + zip + " " + city;
 }
 function fullname(contact){
 	return contact.firstname + " " + contact.lastname;
 }
 function address(contact){
-	return contact.street + " " + contact.streetnr + " " + zip +" " + city;
+	return contact.street + " " + contact.streetnr + " " + contact.zip +" " + contact.city;
 }
 
 var contact1 = new Contact("Peter", "Peterson", "Treskowallee", "8", "10318",
-                          "Berlin", "Berlin", "Germany", true);
+                          "Berlin", "Berlin", "Germany", true, admina);
 var contact2 = new Contact("A2", "B2", "Wilhelminenhofstraße", "75A", "12459",
-                            "Berlin", "Berlin", "Germany", false);
+                            "Berlin", "Berlin", "Germany", false, admina);
 var contact3 = new Contact("A3", "B3", "Straße des 17. Juni", "135", "10623",
-                          "Berlin", "Berlin", "Germany", true);
+                          "Berlin", "Berlin", "Germany", true, normalo);
 var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
-                            "Berlin", "Berlin", "Germany", false);
+                            "Berlin", "Berlin", "Germany", false, normalo);
 
-function User(username, password, contacts, isAdmin){
-	this.username = username;
-	this.password = password;
-	this.contacts = contacts;
-	this.isAdmin = isAdmin;
-	
-	var option = document.createElement("option");
-	option.appendChild(document.createTextNode(username));
-	addForm.owner.appendChild(option);
-}
-	
-var admina = new User("admina", "admina", [contact1, contact2], true);
-var normalo = new User("normalo", "normalo", [contact3, contact4], false);
+//Alle Kontakte
+var contacts = [contact1, contact2, contact3, contact4];
+
+var isUpdated = false;
+//Aktuell angemeldeter Nutzer
+var currUser;
+//Ist aktuell geladene Address Liste nur fuer den aktuellen Nutzer
+var userOnlyAddresses = true;
+//Aktuell ausgewaehlter Kontakt
+var selectedContact;
 
 //Fasst die gegebenen Elemente zu einem Formular zusammen, in dem alle gegebenen
 //Input Felder required sind, damit der submit button aktiviert ist
@@ -101,20 +118,16 @@ function createForm(requiredFields, submitButtons){
 		});
 	}
 }
+//Setzt den wert des gegebenen Feldes und setzt den valid Flag dieses Feldes
 function setValue(field, value){
 	field.value = value;
 	field.valid = field.checkValidity();
 }
 
-
 createForm([loginForm.username, loginForm.password],[loginButton]);
 createForm([addForm.firstname, addForm.lastname, addForm.street, addForm.streetnr, addForm.zip, addForm.city],[addButtons,updateButton]);
 
-var users = [admina, normalo];
-
-var isUpdated = false;
-var currUser;
-
+//Login fuer gegebene Werte im loginForm
 loginButton.addEventListener("click", (e) => {
 	e.preventDefault();
 	const username = loginForm.username.value;
@@ -143,7 +156,7 @@ loginButton.addEventListener("click", (e) => {
 			//Lade Karten Marker und Kontaktliste
 			if(!isUpdated){
 				reloadAddressListUser();
-				updateMap();
+				loadMarkers();
 				isUpdated = true;
 			}
 			
@@ -163,12 +176,15 @@ loginButton.addEventListener("click", (e) => {
 	}
 });
 
+//Logout fuer den aktuellen nutzer, wechsel zu login screen
 logoutButton.addEventListener("click", (e) => {
   //isLoggedIn = false;
   //isAdmina = false;
-  mainScreen.style.display = "none";
-  header.style.display = "none";
-  loginScreen.style.display = "block";
+ 	mainScreen.style.display = "none";
+  	header.style.display = "none";
+ 	loginScreen.style.display = "block";
+
+	userOnlyAddresses = true;
 
 	if(!currUser.isAdmin){
 		addForm.insertBefore(ownerSelect, document.getElementById("private-row"));
@@ -178,42 +194,48 @@ logoutButton.addEventListener("click", (e) => {
 	loginButton.disabled = true;
 });
 
-//Verstecke alle Kontakte dessen besitzer nicht der aktuelle Nutzer ist,
-//Wenn der Show my contacts Button gedrueckt wird
+//Lade alle Kontakte des aktuellen Nutzers
 document.getElementById("show-my-button").addEventListener("click",(e) => {
 	reloadAddressListUser();
 });
 
-//Verstecke 
+//Lade alle Kontakte des aktuellen Nutzers sowie alle public Kontakte anderer Nutzer
 document.getElementById("show-all-button").addEventListener("click", (e) => {
 	reloadAddressListAll();
 });
 
-let userOnlyAddresses = true;
-
+//Laedt die address Liste fuer den aktuellen Nutzer
 function reloadAddressListUser() {
 	addressList.innerHTML = "";
-	for (let contact of currUser.contacts) {
-		addToAddressList(contact);
+	for (let contact of contacts) {
+		if(contact.owner === currUser){
+			addToAddressList(contact);
+		}
 	}
-	userOnlyAddresses = true;
+	
+	if(userOnlyAddresses === false){
+		for(let contact of contacts){
+			if(contact.owner !== currUser && (currUser.isAdmin === true || contact.isPrivate === false)){
+				contact.marker.setMap(null);
+			}
+		}
+		userOnlyAddresses = true;
+	}
 }
 
+//Laedt die Adress Liste neu
+//Wenn Admin inklusive aller anderen Adressen, ansonsten nur publik Adressen
 function reloadAddressListAll(){
 	reloadAddressListUser();
-	for (let user of users){
-		if(user !== currUser){
-			for( let contact of user.contacts){
-				if(contact.isPrivate == false){
-					addToAddressList(contact);
-				}	
-			}
+	
+	for(let contact of contacts){
+		if(contact.owner !== currUser && (currUser.isAdmin === true || contact.isPrivate === false)){
+			addToAddressList(contact);
+			setMarker(contact);
 		}
 	}
 	userOnlyAddresses = false;
 }
-
-let selectedContact;
 
 //Fuegt den spezifizierten Kontakt zur Addressliste des MainScreens hinzu
 //Gegebebenen Falls wird der Bearbeiten Screen fuer den Kontakt freigeschaltet
@@ -222,58 +244,67 @@ function addToAddressList(contact){
 	let addressLi = document.createElement("li");
 	addressLi.innerHTML = fullname(contact);
 	addressLi.className = "address";
-	
-	if(currUser.isAdmin == true || (getOwner(contact).username === currUser.username)){
-	
-		//alert("Add listener for contact: "+contact.fullname+ ".");
 			
-		addressLi.addEventListener("click", (e) => {
+	addressLi.addEventListener("click", (e) => {
 			
+		if(currUser.isAdmin == false && contact.owner.username !== currUser.username){
+			addForm.appendChild(backButton);
+		}else{
 			selectedContact = contact;
-			
 			updateButton.disabled = false;
 			addForm.appendChild(updateButtons);
+		}
 			
-			setValue(addForm.firstname, contact.firstname);
-			setValue(addForm.lastname, contact.lastname);
-			setValue(addForm.street, contact.street);
-			setValue(addForm.streetnr, contact.streetnr);
-			setValue(addForm.zip, contact.zip);
-			setValue(addForm.city, contact.city);
-			setValue(addForm.state, contact.state);
-			setValue(addForm.country, contact.country);
-			addForm.private.checked = contact.isPrivate;
+		setValue(addForm.firstname, contact.firstname);
+		setValue(addForm.lastname, contact.lastname);
+		setValue(addForm.street, contact.street);
+		setValue(addForm.streetnr, contact.streetnr);
+		setValue(addForm.zip, contact.zip);
+		setValue(addForm.city, contact.city);
+		setValue(addForm.state, contact.state);
+		setValue(addForm.country, contact.country);
+		addForm.private.checked = contact.isPrivate;
 		
-			//Setzte den korrekten owner des ausgewaehlten Kontakts
-			if(currUser.isAdmin){
-				for(let i = 0; i<users.length; i++){
-					for(let userContact of users[i].contacts){
-						if(userContact === contact){
-							addForm.owner.selectedIndex = i;
-							break;
-						}
-					}
+		//Setzte den korrekten owner des ausgewaehlten Kontakts
+		if(currUser.isAdmin){
+			for(let i = 0; i<users.length; i++){
+				if(contact.owner === users[i]){
+					addForm.owner.selectedIndex = i;
+					break;
 				}
 			}
+			/*for(let i = 0; i<users.length; i++){
+				for(let userContact of users[i].contacts){
+					if(userContact === contact){
+						addForm.owner.selectedIndex = i;
+						break;
+					}
+				}
+			}*/
+		}
 		
-			mainScreen.style.display = "none";
-			header.style.display = "none";
-			addScreen.style.display = "block";
-		});
-	}
+		mainScreen.style.display = "none";
+		header.style.display = "none";
+		addScreen.style.display = "block";
+	});
 	addressList.appendChild(addressLi);
 }
 
+//Gibt den owner des gegebenen Kontakts zurueck
 function getOwner(contact){
-	for(let i = 0; i<users.length; i++){
+	console.log("!Deprecated method called: getOwner(contact)!");
+	return contact.owner;
+	/*for(let i = 0; i<users.length; i++){
 		for(let userContact of users[i].contacts){
 			if(userContact === contact){
 				return users[i];
 			}
 		}
 	}
+	*/
 }
 
+//Inizialisiert die Karte mit einem Marker in Berlin Mitte
 function initMap() {
   // The location of Berlin Mitte
   mitte = {lat:	52.531677, lng:	13.381777};
@@ -286,78 +317,66 @@ function initMap() {
   const marker = new google.maps.Marker({
     position: mitte,
     map: map,
+	title: "Berlin Mitte",
   });
 }
 
-function updateMap() {
-  for (let contact of currUser.contacts) {
-    var xhr = new XMLHttpRequest();
-    var url = "https://maps.googleapis.com/maps/api/geocode/json?"
-    url = url + "address=" + contact.address;
-    url = url +"&key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY";
-    xhr.open("GET", url, true);
-    xhr.onerror = function() {// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
-      alert("Connecting to server with " + url + " failed!\n");
-    };
-    xhr.onload = function(e) {// diese Funktion wird ausgefuehrt, wenn die Anfrage erfolgreich war
-      var data = this.response;
-      var obj = JSON.parse(data);
-      console.log(obj);
-      if (this.status == 200) {
-        if (obj.status != "ZERO_RESULTS") {
-          const lat = obj.results[0].geometry.location.lat;
-          const lng = obj.results[0].geometry.location.lng;
-          const mkr = new google.maps.Marker({
-            position: {lat: lat, lng:	lng},
-            map: map,
-          });
-          console.log (lat +", " + lng);
-        } else { alert ("Die Adresse konnte nicht aufgelöst werden!");}
-      } else { //Handhabung von nicht-200er
-        alert ("HTTP-status code was: " + obj.status);
-      }
-    };
-    xhr.send();
-  }
-}
-
-function setMarker(contact){
-	var xhr = new XMLHttpRequest();
-	var url = "https://maps.googleapis.com/maps/api/geocode/json?";
-    url = url + "address=" + address(contact);
-    url = url +"&key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY";
-	xhr.open("GET", url, true);
-	// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
-	xhr.onerror = function(){
-		alert("Connecting to server with " + url + " failed!\n");
-		return false;
-	};
-	// diese Funktion wird ausgefuehrt, wenn die Anfrage erfolgreich war
-	xhr.onload = function(e){
-		var data = this.response;
-		var obj = JSON.parse(data);
-		console.log(obj);
-		if(this.status == 200){
-			if(obj.status == "ZERO_RESULTS"){
-				alert("The address could not be resolved");
-				return false;
-			}else{
-				const lat = obj.results[0].geometry.location.lat;
-				const lng = obj.results[0].geometry.location.lng;
-				const mkr = new google.maps.Marker({
-					position: {lat: lat, lng:	lng},
-            		map: map,
-				});
-				console.log (lat +", " + lng);
-			}
-		}else{
-			alert ("HTTP-status code was: " + obj.status);
-			return false;
+//Aktualisiert die Karte in dem ein Marker fuer jeden Kontakt hinzugefuegt wird
+function loadMarkers() {
+	for (let contact of contacts) {
+		if(contact.owner === currUser){
+			setMarker(contact);
 		}
 	}
-	xhr.send();
 }
 
+//Fuegt einen Marker auf der Karte fuer den gegebenen Kontak hinzu
+//Gibt entsprechenden alert wenn kein Marker erstellt werden konnte
+//Wird visible auf true gesetzt oder nicht spezifiziert, wird der Marker sobald er erstellt wurde auf der Karte angezeigt
+function setMarker(contact, visible){
+	if(contact.markerGenerated === true){
+		contact.marker.setMap(map);
+	}else{
+	
+		var xhr = new XMLHttpRequest();
+		var url = "https://maps.googleapis.com/maps/api/geocode/json?";
+		url = url + "address=" + address(contact);
+		url = url +"&key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY";
+		xhr.open("GET", url, true);
+		// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
+		xhr.onerror = function(){
+			alert("Connecting to server with " + url + " failed!\n");
+		};
+		// diese Funktion wird ausgefuehrt, wenn die Anfrage erfolgreich war
+		xhr.onload = function(e){
+			var data = this.response;
+			var obj = JSON.parse(data);
+			console.log(obj);
+			if(this.status == 200){
+				if(obj.status == "ZERO_RESULTS"){
+					alert("The address could not be resolved");
+				}else{
+					let selMap = null;
+					if(visible === true || visible === undefined){
+						selMap = map;
+					}
+					const mkr = new google.maps.Marker({
+						position: {lat: obj.results[0].geometry.location.lat, lng:	obj.results[0].geometry.location.lng},
+						map: selMap,
+						title: fullname(contact)
+					});
+					contact.marker = mkr;
+					contact.markerGenerated = true;
+				}
+			}else{
+				alert ("HTTP-status code was: " + obj.status);
+			}
+		}
+		xhr.send();
+	}
+}
+
+//Wechselt in den add Contact screen
 addNewButton.addEventListener("click", (e) => {
 
 	setValue(addForm.firstname, "");
@@ -380,17 +399,12 @@ addNewButton.addEventListener("click", (e) => {
 	
 });
 
+//Fuegt den durch das addForm spezifiezierten Kontakt hinzu
 addButtons.addEventListener("click", (e) => {
 	
 	let owner = currUser;
 	if(currUser.isAdmin){
-		let ownerInput = addForm.owner.value;
-		for(let user of users){
-			if(user.username = ownerInput){
-				owner = user;
-				break;
-			}
-		}
+		owner = users[addForm.owner.selectedIndex];
 	}
 	
 	let contactInput = new Contact(
@@ -403,12 +417,18 @@ addButtons.addEventListener("click", (e) => {
 			addForm.state.value,
 			addForm.country.value,
 			addForm.private.value,	
-		);
+			owner
+		);	
 	
-	owner.contacts.push(contactInput);
+	if(userOnlyAddresses && owner!==currUser){
+		setMarker(contactInput, false);
+	}else{
+		setMarker(contactInput);
+	}
+	
+	contacts.push(contactInput);
 	
 	addToAddressList(contactInput);
-	updateMap();
 	
 	addButtons.remove();	
 	
@@ -417,7 +437,18 @@ addButtons.addEventListener("click", (e) => {
 	header.style.display = "block";
 });
 
+//Aktuellisiert den ausgewaehlten Kontakt durch die im addForm
+//gewaehlten spezifikationen
 updateButton.addEventListener("click", (e) => {
+	
+	var addressChanged = false;
+	if(selectedContact.street != addForm.street.value
+		|| selectedContact.streetnr != addForm.streetnr.value
+		|| selectedContact.zip != addForm.zip.value
+		|| selectedContact.city != addForm.city.value){
+		
+		addressChanged = true;
+	}
 	
 	selectedContact.firstname = addForm.firstname.value;
 	selectedContact.lastname = addForm.lastname.value;
@@ -428,6 +459,20 @@ updateButton.addEventListener("click", (e) => {
 	selectedContact.state = addForm.state.value;
 	selectedContact.country = addForm.country.value;
 	selectedContact.isPrivate = addForm.private.checked;
+	if(currUser.isAdmin === true){
+		selectedContact.owner = users[addForm.owner.selectedIndex];
+		if(selectedContact.owner !== currUser && userOnlyAddresses){
+			selectedContact.marker.setMap(null);
+		}
+	}else{
+		selectedContact.owner = currUser;
+	}
+	
+	if(addressChanged === true){
+		selectedContact.marker.setMap(null);
+		selectedContact.markerGenerated = false;
+		setMarker(selectedContact);
+	}
 	
 	if(userOnlyAddresses === true){
 		reloadAddressListUser();
@@ -442,22 +487,39 @@ updateButton.addEventListener("click", (e) => {
 	header.style.display = "block";
 });
 
+//Loescht den ausgewaehlten Kontakt
 deleteButton.addEventListener("click", (e) => {
-	let owner = getOwner(selectedContact);
+	selectedContact.marker.setMap(null);
+	
+	for(let i = 0; i<contacts.length; i++){
+		if(contacts[i] === selectedContact){
+			contacts.splice(i,1);
+		}
+	}
+	
+	/*let owner = getOwner(selectedContact);
 	for(let i = 0; i<owner.contacts.length; i++){
 		if(owner.contacts[i] == selectedContact){
 			owner.contacts.splice(i,1);
 		}
-	}
+	}*/
 	
 	if(userOnlyAddresses === true){
 		reloadAddressListUser();
 	}else{
 		reloadAddressListAll();
 	}
-	updateMap();
 	
 	updateButtons.remove();
+	
+	addScreen.style.display = "none";
+	mainScreen.style.display = "block";
+	header.style.display = "block";
+});
+
+//Kehrt vom Update- zum MainScreen zurueck 
+backButton.addEventListener("click", (e) => {
+	backButton.remove();
 	
 	addScreen.style.display = "none";
 	mainScreen.style.display = "block";
