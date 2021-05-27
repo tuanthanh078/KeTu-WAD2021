@@ -68,7 +68,7 @@ function address(contact){
 
 var contact1 = new Contact("Peter", "Peterson", "Treskowallee", "8", "10318",
                           "Berlin", "Berlin", "Germany", true, admina);
-var contact2 = new Contact("A2", "B2", "Wilhelminenhofstraße", "75A", "12459",
+var contact2 = new Contact("A2", "B2", "Wilhelminenhofstraße", "75", "12459",
                             "Berlin", "Berlin", "Germany", false, admina);
 var contact3 = new Contact("A3", "B3", "Straße des 17. Juni", "135", "10623",
                           "Berlin", "Berlin", "Germany", true, normalo);
@@ -78,7 +78,6 @@ var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
 //Alle Kontakte
 var contacts = [contact1, contact2, contact3, contact4];
 
-var isUpdated = false;
 //Aktuell angemeldeter Nutzer
 var currUser;
 //Ist aktuell geladene Address Liste nur fuer den aktuellen Nutzer
@@ -154,11 +153,8 @@ loginButton.addEventListener("click", (e) => {
 			headerInfo.innerHTML = "Hello "+currUser.username+"!";
 			
 			//Lade Karten Marker und Kontaktliste
-			if(!isUpdated){
-				reloadAddressListUser();
-				loadMarkers();
-				isUpdated = true;
-			}
+			reloadAddressListUser();
+			loadMarkers();
 			
 			//Entferne Admin Felder fuer Normalo
 			if(!currUser.isAdmin){
@@ -188,6 +184,10 @@ logoutButton.addEventListener("click", (e) => {
 
 	if(!currUser.isAdmin){
 		addForm.insertBefore(ownerSelect, document.getElementById("private-row"));
+	}
+	
+	for(let contact of contacts){
+		contact.marker.setMap(null);
 	}
 	
 	loginForm.password.value = "";
