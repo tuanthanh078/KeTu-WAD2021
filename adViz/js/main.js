@@ -452,6 +452,9 @@ updateButton.addEventListener("click", (e) => {
 	
 	selectedContact.firstname = addForm.firstname.value;
 	selectedContact.lastname = addForm.lastname.value;
+	
+	selectedContact.marker.setTitle(fullname(selectedContact));
+	
 	selectedContact.street = addForm.street.value;
 	selectedContact.streetnr = addForm.streetnr.value;
 	selectedContact.zip = addForm.zip.value;
