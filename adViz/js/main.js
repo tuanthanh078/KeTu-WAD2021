@@ -190,7 +190,8 @@ logoutButton.addEventListener("click", (e) => {
 		setMarker(contact, false);
 	}
 	
-	loginForm.password.value = "";
+	
+	setValue(loginForm.password, "");
 	loginButton.disabled = true;
 });
 
@@ -392,6 +393,8 @@ function setMarker(contact, visible){
 
 //Wechselt in den add Contact screen
 addNewButton.addEventListener("click", (e) => {
+	
+	addButtons.disabled = true;
 
 	setValue(addForm.firstname, "");
 	setValue(addForm.lastname, "");
@@ -438,11 +441,10 @@ addButtons.addEventListener("click", (e) => {
 		setMarker(contactInput, false);
 	}else{
 		setMarker(contactInput);
+		addToAddressList(contactInput);
 	}
 	
 	contacts.push(contactInput);
-	
-	addToAddressList(contactInput);
 	
 	addButtons.remove();	
 	
