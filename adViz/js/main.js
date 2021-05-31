@@ -187,7 +187,7 @@ logoutButton.addEventListener("click", (e) => {
 	}
 	
 	for(let contact of contacts){
-		contact.marker.setMap(null);
+		setMarker(contact, false);
 	}
 	
 	loginForm.password.value = "";
@@ -204,34 +204,41 @@ document.getElementById("show-all-button").addEventListener("click", (e) => {
 	reloadAddressListAll();
 });
 
-//Laedt die address Liste fuer den aktuellen Nutzer
-function reloadAddressListUser() {
+function reloadAddressList(){
 	addressList.innerHTML = "";
 	for (let contact of contacts) {
 		if(contact.owner === currUser){
 			addToAddressList(contact);
 		}
 	}
+}
+
+//Laedt die address Liste fuer den aktuellen Nutzer
+function reloadAddressListUser() {
+	reloadAddressList();
 	
 	if(userOnlyAddresses === false){
 		for(let contact of contacts){
 			if(contact.owner !== currUser && (currUser.isAdmin === true || contact.isPrivate === false)){
-				contact.marker.setMap(null);
+				setMarker(contact, false);
 			}
 		}
-		userOnlyAddresses = true;
 	}
+	
+	userOnlyAddresses = true;
 }
 
 //Laedt die Adress Liste neu
 //Wenn Admin inklusive aller anderen Adressen, ansonsten nur publik Adressen
 function reloadAddressListAll(){
-	reloadAddressListUser();
+	reloadAddressList();
 	
 	for(let contact of contacts){
 		if(contact.owner !== currUser && (currUser.isAdmin === true || contact.isPrivate === false)){
 			addToAddressList(contact);
-			setMarker(contact);
+			if(userOnlyAddresses === true){
+				setMarker(contact);
+			}
 		}
 	}
 	userOnlyAddresses = false;
@@ -334,8 +341,18 @@ function loadMarkers() {
 //Gibt entsprechenden alert wenn kein Marker erstellt werden konnte
 //Wird visible auf true gesetzt oder nicht spezifiziert, wird der Marker sobald er erstellt wurde auf der Karte angezeigt
 function setMarker(contact, visible){
+	
+	let selMap = null;
+	if(visible === true || visible === undefined){
+		selMap = map;
+	}
+	
 	if(contact.markerGenerated === true){
-		contact.marker.setMap(map);
+		try{
+			contact.marker.setMap(selMap);
+		}catch(e){
+			
+		}
 	}else{
 	
 		var xhr = new XMLHttpRequest();
@@ -355,11 +372,8 @@ function setMarker(contact, visible){
 			if(this.status == 200){
 				if(obj.status == "ZERO_RESULTS"){
 					alert("The address could not be resolved");
+					contact.markerGenerated = true;
 				}else{
-					let selMap = null;
-					if(visible === true || visible === undefined){
-						selMap = map;
-					}
 					const mkr = new google.maps.Marker({
 						position: {lat: obj.results[0].geometry.location.lat, lng:	obj.results[0].geometry.location.lng},
 						map: selMap,
