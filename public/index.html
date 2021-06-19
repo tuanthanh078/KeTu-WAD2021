@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>AdViz</title>
+    <link rel="stylesheet" href="stylesheets/stylesheet.css">
+    <script src="javascripts/main.js" defer></script>
+  </head>
+  <body>
+
+    <div id='login-screen' class="form">
+      <form id='login-form' action="index.html" method="post">
+        <div class="form-row">
+            <label for="username" class="form-label">Username: </label>
+            <input type="text" id="usernameID" name="username" required>
+        </div>
+        <div class="form-row">
+            <label for="password" class="form-label">Password: </label>
+            <input type="password" id="passwordID" name="password" required>
+        </div>
+        <button type="submit" id="login-button">Login</button>
+      </form>
+    </div>
+
+    <div id="header-bar">
+      <div id="header-info">
+      </div>
+      <button type="button" id="logout-button" name="logout-button">Logout</button>
+    </div>
+
+    <div id="main-screen" class="main-screen">
+      <div class="button-bar">
+          <button type="button" class="contact-button" name="show-my-contacts-button" id="show-my-button">
+            Show my contacts
+          </button>
+          <button type="button" class="contact-button" name="show-all-contacts-button" id="show-all-button">
+            Show all contacts
+          </button>
+          <button type="button" id="add-new-button" class="contact-button" name="add-new-contact-button">
+            Add new contact
+          </button>
+      </div>
+      <div class="address-bar">
+        <ul id="address-list" class="address-list">
+          <!-- <li class="address">Treskowallee 8, 10318 Berlin</li>
+          <li class="address">Wilhelminenhofstraße 75A, 12459 Berlin</li>
+          <li class="address">Straße des 17. Juni 135, 10623 Berlin</li> -->
+        </ul>
+      </div>
+      <div id="map"></div>
+      <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+      <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY&callback=initMap&libraries=&v=weekly"
+        async>
+      </script>
+    </div>
+
+
+    <div id="add-screen" class="form">
+    	<form action="index.html" method="post" id="add-form">
+
+    		<div class="form-row">
+            	<label for="firstname" class="form-label">First name: </label>
+           		<input type="text" id="first-nameID" name="firstname" required>
+        	</div>
+
+        	<div class="form-row">
+          		<label for="lastname" class="form-label">Last name: </label>
+          		<input type="text" id="last-nameID" name="lastname" required>
+        	</div>
+
+        	<div class="form-row">
+        		<label for="street" class="form-label">Street/Nr: </label>
+        		<input type="text" id="streetID" name="street" required>
+        		<input type="number" id="streetnrID" name="streetnr">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="zip" class="form-label">ZIP: </label>
+        		<input type="number" id="zipID" name="zip" required>
+        	</div>
+
+        	<div class="form-row">
+        		<label for="city" class="form-label">City: </label>
+        		<input type="text" id="cityID" name="city" required>
+        	</div>
+
+        	<div class="form-row">
+        		<label for="state" class="form-label">State: </label>
+        		<input type="text" id="stateID" name="state">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="country" class="form-label">Country: </label>
+        		<input type="text" id="countryID" name="country">
+        	</div>
+
+        	<div class="form-row" id="owner-select">
+        		<label for="owner" class="form-label">Owner: </label>
+        		<select id="ownerID" name="owner">
+
+        		</select>
+        	</div>
+
+        	<div class="form-row" id="private-row">
+        		<label for="private" class="form-label">Private </label>
+        		<input type="checkbox" id="privateID" name="private" checked>
+        	</div>
+
+        	<button type="submit" name="add-button" id="add-buttons">Add</button>
+
+        	<div id="update-buttons">
+        		<button type="submit" name="apply-button" id="apply-button">Apply</button>
+        		<button type="button" name="delete-button" id="delete-button">Delete</button>
+        	</div>
+
+        	<button type="button" name="back-button" id="back-button">Back</button>
+        </form>
+    </div>
+
+
+	<!--
+	<div id="update-screen" class="form">
+		<form action="index.html" method="post">
+
+			<div class="form-row">
+            	<label for="first-name" class="form-label">First name: </label>
+           		<input type="text" id="first-nameID" name="first-name" required value="Max">
+        	</div>
+
+        	<div class="form-row">
+          		<label for="last-name" class="form-label">Last name: </label>
+          		<input type="text" id="last-nameID" name="last-name" required value="Mustermann">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="street" class="form-label">Street/Nr: </label>
+        		<input type="text" id="streetID" name="street" required value="Trekowallee">
+        		<input type="number" id="streetnrID" name="streetnr" value="8">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="zip" class="form-label">ZIP: </label>
+        		<input type="number" id="zipID" name="zip" required value="10318">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="city" class="form-label">City: </label>
+        		<input type="text" id="cityID" name="city" required value="Berlin">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="state" class="form-label">State: </label>
+        		<input type="text" id="stateID" name="state" value="Berlin">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="country" class="form-label">Country: </label>
+        		<input type="text" id="countryID" name="country" value="Germany">
+        	</div>
+
+        	<div class="form-row">
+        		<label for="owner" class="form-label">Owner: </label>
+        		<select id="ownerID" name="owner">
+        			<option>Self</option>
+        			<option selected>Normalo</option>
+        		</select>
+        	</div>
+
+        	<div class="form-row">
+        		<label for="private" class="form-label">Private </label>
+        		<input type="checkbox" id="privateID" name="private" checked>
+        	</div>
+
+        	<div>
+        		<button type="submit" name="apply-button">Apply</button>
+        		<button type="button" name="delete-button">Delete</button>
+        	</div>
+		</form>
+	</div>
+	-->
+
+  </body>
+</html>
