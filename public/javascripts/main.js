@@ -52,10 +52,10 @@ function Contact(firstname, lastname, street, streetnr, zip, city, state, countr
   this.isPrivate = isPrivate;
   this.markerGenerated = false;
   this.owner = owner;
-  //Ersetzt durch methoden fullname(contact), und address(contact)
-  //this.fullname = firstname + " " + lastname;
-  //this.address = street + " " + streetnr + " " + zip + " " + city;
+	this.lat = null;
+	this.lng = null;
 }
+
 function fullname(contact){
 	return contact.firstname + " " + contact.lastname;
 }
@@ -345,8 +345,6 @@ function loadMarkers() {
 //Gibt entsprechenden alert wenn kein Marker erstellt werden konnte
 //Wird visible auf true gesetzt oder nicht spezifiziert, wird der Marker sobald er erstellt wurde auf der Karte angezeigt
 function setMarker(contact, visible){
-
-	let selMap = null;
 	if(visible === true || visible === undefined){
 		selMap = map;
 	}
@@ -378,8 +376,12 @@ function setMarker(contact, visible){
 					alert("The address could not be resolved");
 					contact.markerGenerated = true;
 				}else{
+					let lat = obj.results[0].geometry.location.lat;
+					let lng = obj.results[0].geometry.location.lng;
+					contact.lat = lat;
+					contact.lng = lng;
 					const mkr = new google.maps.Marker({
-						position: {lat: obj.results[0].geometry.location.lat, lng:	obj.results[0].geometry.location.lng},
+						position: {lat: lat, lng:	lng},
 						map: selMap,
 						title: fullname(contact)
 					});
@@ -421,24 +423,23 @@ addNewButton.addEventListener("click", (e) => {
 
 //Fuegt den durch das addForm spezifiezierten Kontakt hinzu
 addButtons.addEventListener("click", (e) => {
-
+	console.log(contacts);
 	let owner = currUser;
 	if(currUser.isAdmin){
 		owner = users[addForm.owner.selectedIndex];
 	}
 
-	let contactInput = new Contact(
-			addForm.firstname.value,
-			addForm.lastname.value,
-			addForm.street.value,
-			addForm.streetnr.value,
-			addForm.zip.value,
-			addForm.city.value,
-			addForm.state.value,
-			addForm.country.value,
-			addForm.private.value,
-			owner
-		);
+	let firstname =	addForm.firstname.value;
+	let lastname = addForm.lastname.value;
+	let street = addForm.street.value;
+	let streetnr = addForm.streetnr.value;
+	let zip = addForm.zip.value;
+	let city = addForm.city.value;
+	let state = addForm.state.value;
+	let country = addForm.country.value;
+	let isPrivate = addForm.private.value == "on";
+
+	let contactInput = new Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner);
 
 	if(userOnlyAddresses && owner!==currUser){
 		setMarker(contactInput, false);
@@ -451,9 +452,28 @@ addButtons.addEventListener("click", (e) => {
 
 	addButtons.remove();
 
-	addScreen.style.display = "none";
-	mainScreen.style.display = "block";
-	header.style.display = "block";
+	let httpRequest = new XMLHttpRequest();
+	let url = "http://localhost:3000/contacts";
+
+	httpRequest.open("POST", url, true);
+	httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+	httpRequest.onerror = function() {// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
+			console.log("Connecting to server with " + url + " failed!\n");
+	};
+
+	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
+		if(httpRequest.readyState == 4 && httpRequest.status == 201) {
+			console.log(httpRequest.responseText);
+		}
+	};
+	function sendHTTPResquest() {
+		httpRequest.send(`firstname=${firstname}&lastname=${lastname}&street=${street}&streetnr=${streetnr}&zip=${zip}&city=${city}&state=${state}&country=${country}&isPrivate=${isPrivate}&owner=${owner.username}&lat=${contactInput.lat}&lng=${contactInput.lng}`);
+		addScreen.style.display = "none";
+		mainScreen.style.display = "block";
+		header.style.display = "block";
+	}
+	setTimeout(sendHTTPResquest, 500);
 });
 
 //Aktuellisiert den ausgewaehlten Kontakt durch die im addForm
