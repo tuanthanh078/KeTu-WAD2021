@@ -579,9 +579,28 @@ deleteButton.addEventListener("click", (e) => {
 
 	updateButtons.remove();
 
-	addScreen.style.display = "none";
-	mainScreen.style.display = "block";
-	header.style.display = "block";
+	let httpRequest = new XMLHttpRequest();
+	let url = "http://localhost:3000/contacts/" + selectedContact.id;
+
+	httpRequest.open("DELETE", url, true);
+	httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+	httpRequest.onerror = function() {// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
+			console.log("Connecting to server with " + url + " failed!\n");
+	};
+
+	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
+		if(httpRequest.readyState == 4 && httpRequest.status == 204) {
+			console.log("204");
+		}
+	};
+	function sendHTTPResquest() {
+		httpRequest.send();
+		addScreen.style.display = "none";
+		mainScreen.style.display = "block";
+		header.style.display = "block";
+	}
+	setTimeout(sendHTTPResquest, 500);
 });
 
 //Kehrt vom Update- zum MainScreen zurueck

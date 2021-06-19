@@ -110,4 +110,15 @@ router.put('/:id', function(req, res, next) {
   res.end();
 });
 
+router.delete('/:id', function(req, res, next) {
+  let id = Number(req.params.id);
+  if (id <= contacts.length && id > 0) {
+    contacts.splice(id-1, 1);
+    console.log(contacts);
+    res.status(204);
+  } else
+    res.status(401);
+  res.end();
+});
+
 module.exports = router;
