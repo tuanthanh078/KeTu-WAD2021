@@ -23,16 +23,16 @@ function address(contact){
 	return contact.street + " " + contact.streetnr + " " + contact.zip +" " + contact.city;
 }
 
-var contact1 = new Contact("Peter", "Peterson", "Treskowallee", "8", "10318",
+var contact1 = new Contact(1, "Peter", "Peterson", "Treskowallee", "8", "10318",
                           "Berlin", "Berlin", "Germany", true, "admina",
                           52.49222, 13.5264999);
-var contact2 = new Contact("A2", "B2", "Wilhelminenhofstraße", "75", "12459",
+var contact2 = new Contact(2, "A2", "B2", "Wilhelminenhofstraße", "75", "12459",
                             "Berlin", "Berlin", "Germany", false, "admina",
                           52.4570506, 13.5275799);
-var contact3 = new Contact("A3", "B3", "Straße des 17. Juni", "135", "10623",
+var contact3 = new Contact(3, "A3", "B3", "Straße des 17. Juni", "135", "10623",
                           "Berlin", "Berlin", "Germany", true, "normalo",
                         52.5122205, 13.3270894);
-var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
+var contact4 = new Contact(4, "A4", "B4", "Kaiserswerther Str.", "16", "14195",
                             "Berlin", "Berlin", "Germany", false, "normalo",
                           52.4479602, 13.2856298);
 
@@ -57,6 +57,11 @@ router.post('/', function(req, res, next) {
   contacts.push(new Contact(contacts.length, firstname, lastname, street, streetnr, zip,
     city, state, country, isPrivate, owner, lat, lng));
   res.status(201).json({"id" : contacts.length-1});
+  res.end();
+});
+
+router.get('/', function(req, res, next) {
+  res.status(200).send(contacts);
   res.end();
 });
 
