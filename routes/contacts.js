@@ -76,4 +76,38 @@ router.get('/:id', function(req, res, next) {
   res.end();
 });
 
+router.put('/:id', function(req, res, next) {
+  let firstname = req.body.firstname;
+  let lastname = req.body.lastname;
+  let street = req.body.street;
+  let streetnr = req.body.streetnr;
+  let zip = req.body.zip;
+  let city = req.body.city;
+  let state = req.body.state;
+  let country = req.body.country;
+  let isPrivate = req.body.isPrivate;
+  let owner = req.body.owner;
+  let lat = req.body.lat;
+  let lng = req.body.lng;
+  let id = Number(req.params.id);
+  if (id <= contacts.length && id > 0) {
+    contacts[id-1].firstname = req.body.firstname;
+    contacts[id-1].lastname = req.body.lastname;
+    contacts[id-1].street = req.body.street;
+    contacts[id-1].streetnr = req.body.streetnr;
+    contacts[id-1].zip = req.body.zip;
+    contacts[id-1].city = req.body.city;
+    contacts[id-1].state = req.body.state;
+    contacts[id-1].country = req.body.country;
+    contacts[id-1].isPrivate = req.body.isPrivate;
+    contacts[id-1].owner = req.body.owner;
+    contacts[id-1].lat = req.body.lat;
+    contacts[id-1].lng = req.body.lng;
+    console.log(contacts[id-1]);
+    res.status(204);
+  } else
+    res.status(401);
+  res.end();
+});
+
 module.exports = router;
