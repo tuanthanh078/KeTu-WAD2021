@@ -65,4 +65,15 @@ router.get('/', function(req, res, next) {
   res.end();
 });
 
+router.get('/:id', function(req, res, next) {
+  let id = Number(req.params.id);
+  console.log(id);
+  if (id <= contacts.length && id > 0) {
+    res.set('application/json');
+    res.status(200).send(JSON.stringify(contacts[id-1]));
+  } else
+    res.status(401);
+  res.end();
+});
+
 module.exports = router;
