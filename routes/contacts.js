@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 
-function Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner, lat, lng) {
+function Contact(id, firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner, lat, lng) {
+  this.id = id;
   this.firstname = firstname;
   this.lastname = lastname;
   this.street = street;
@@ -53,7 +54,7 @@ router.post('/', function(req, res, next) {
   let lng = req.body.lng;
   console.log("[ROUTER contacts.js] post");
   console.log(req.body);
-  contacts.push(new Contact(firstname, lastname, street, streetnr, zip,
+  contacts.push(new Contact(contacts.length, firstname, lastname, street, streetnr, zip,
     city, state, country, isPrivate, owner, lat, lng));
   res.status(201).json({"id" : contacts.length-1});
   res.end();

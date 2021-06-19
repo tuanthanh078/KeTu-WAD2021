@@ -41,7 +41,8 @@ var normalo = new User("normalo", false);
 var users = [admina, normalo];
 
 function Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner) {
-  this.firstname = firstname;
+	this.id = null;
+	this.firstname = firstname;
   this.lastname = lastname;
   this.street = street;
   this.streetnr = streetnr;
@@ -65,12 +66,16 @@ function address(contact){
 
 var contact1 = new Contact("Peter", "Peterson", "Treskowallee", "8", "10318",
                           "Berlin", "Berlin", "Germany", true, admina);
+contact1.id = 1;
 var contact2 = new Contact("A2", "B2", "Wilhelminenhofstraße", "75", "12459",
                             "Berlin", "Berlin", "Germany", false, admina);
+contact2.id = 2;
 var contact3 = new Contact("A3", "B3", "Straße des 17. Juni", "135", "10623",
                           "Berlin", "Berlin", "Germany", true, normalo);
+contact3.id = 3;
 var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
                             "Berlin", "Berlin", "Germany", false, normalo);
+contact4.id = 4;
 
 //Alle Kontakte
 var contacts = [contact1, contact2, contact3, contact4];
@@ -464,7 +469,8 @@ addButtons.addEventListener("click", (e) => {
 
 	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
 		if(httpRequest.readyState == 4 && httpRequest.status == 201) {
-			console.log(httpRequest.responseText);
+			contacts[contacts.length-1].id = JSON.parse(httpRequest.responseText)["id"];
+			console.log(contacts[contacts.length-1].id);
 		}
 	};
 	function sendHTTPResquest() {
