@@ -43,20 +43,19 @@ var users = [admina, normalo];
 function Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner) {
 	this.id = null;
 	this.firstname = firstname;
-  this.lastname = lastname;
-  this.street = street;
-  this.streetnr = streetnr;
-  this.zip = zip;
-  this.city = city;
-  this.state = state;
-  this.country = country;
-  this.isPrivate = isPrivate;
-  this.markerGenerated = false;
-  this.owner = owner;
+	this.lastname = lastname;
+	this.street = street;
+	this.streetnr = streetnr;
+	this.zip = zip;
+	this.city = city;
+	this.state = state;
+	this.country = country;
+	this.isPrivate = isPrivate;
+	this.markerGenerated = false;
+	this.owner = owner;
 	this.lat = null;
 	this.lng = null;
 }
-
 function fullname(contact){
 	return contact.firstname + " " + contact.lastname;
 }
@@ -64,6 +63,7 @@ function address(contact){
 	return contact.street + " " + contact.streetnr + " " + contact.zip +" " + contact.city;
 }
 
+/*
 var contact1 = new Contact("Peter", "Peterson", "Treskowallee", "8", "10318",
                           "Berlin", "Berlin", "Germany", true, admina);
 contact1.id = 1;
@@ -76,9 +76,24 @@ contact3.id = 3;
 var contact4 = new Contact("A4", "B4", "Kaiserswerther Str.", "16", "14195",
                             "Berlin", "Berlin", "Germany", false, normalo);
 contact4.id = 4;
+*/
 
 //Alle Kontakte
-var contacts = [contact1, contact2, contact3, contact4];
+//var contacts = [contact1, contact2, contact3, contact4];
+var contacts;
+
+//Load contacts from server if login was succesful
+let url = "http://localhost:3000/contacts";
+let httpRequest = new XMLHttpRequest();
+httpRequest.open("GET", url, true);
+httpRequest.onerror = function(){
+	console.log("Connecting to server with " + url + " failed!\n");
+};
+httpRequest.onload = function() {
+	contacts = JSON.parse(this.response);
+	console.log(contacts);
+};
+httpRequest.send();
 
 //Aktuell angemeldeter Nutzer
 var currUser;
@@ -154,10 +169,14 @@ loginButton.addEventListener("click", (e) => {
 				// let pojo = JSON.parse(httpRequest.responseText);
 				//Setze aktuellen User
 				currUser = JSON.parse(httpRequest.responseText);
+				
+				/*
 				if (currUser.isAdmin)
 					currUser = admina;
 				else
 					currUser = normalo;
+				*/
+				currUser = new User(currUser.username, currUser.isAdmin);
 
 				//Wechsel zu mainScreen
 				loginScreen.style.display = "none";
