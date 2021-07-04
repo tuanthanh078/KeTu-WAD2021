@@ -514,6 +514,7 @@ addButtons.addEventListener("click", (e) => {
 
 	httpRequest.onerror = function() {// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
 			console.log("Connecting to server with " + url + " failed!\n");
+			alert("The contact couldn't be submitted to the server!");
 	};
 
 	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
@@ -528,7 +529,8 @@ addButtons.addEventListener("click", (e) => {
 		mainScreen.style.display = "block";
 		header.style.display = "block";
 	}
-	setTimeout(sendHTTPResquest, 500);
+	
+	setTimeout(sendHTTPResquest, 1000);
 });
 
 //Aktuellisiert den ausgewaehlten Kontakt durch die im addForm
