@@ -22,6 +22,22 @@ const ownerSelect = document.getElementById("owner-select");
 
 var map;
 var mitte;
+//Inizialisiert die Karte mit einem Marker in Berlin Mitte
+function initMap() {
+  // The location of Berlin Mitte
+  mitte = {lat:	52.531677, lng:	13.381777};
+  // The map, centered at Uluru
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 10,
+    center: mitte,
+  });
+  // The marker, positioned at Berlin Mitte
+  const marker = new google.maps.Marker({
+    position: mitte,
+    map: map,
+	title: "Berlin Mitte",
+  });
+}
 
 // var isLoggedIn = false;
 // var isAdmina = false;
@@ -171,9 +187,6 @@ loginButton.addEventListener("click", (e) => {
 				//Zeige Header mit Begruessung und Logout Button
 				header.style.display = "block";
 				headerInfo.innerHTML = "Hello "+currUser.username+"!";
-				//Lade Karten Marker und Kontaktliste
-				reloadAddressListUser();
-				loadMarkers();
 				//Entferne Admin Felder fuer Normalo
 				if(!currUser.isAdmin){
 					ownerSelect.remove();
@@ -194,10 +207,10 @@ loginButton.addEventListener("click", (e) => {
 					for(let contact of contacts){
 						readMarker(contact);
 					}
+					
+					reloadAddressListUser();
 				};
 				contactsRequest.send();
-				
-				setTimeout(function(){reloadAddressListUser();});
 		}
 	};
 
@@ -213,6 +226,8 @@ logoutButton.addEventListener("click", (e) => {
  	mainScreen.style.display = "none";
   	header.style.display = "none";
  	loginScreen.style.display = "block";
+
+	contacts = [];
 
 	userOnlyAddresses = true;
 
@@ -348,23 +363,6 @@ function getOwner(contact){
 	*/
 }
 
-//Inizialisiert die Karte mit einem Marker in Berlin Mitte
-function initMap() {
-  // The location of Berlin Mitte
-  mitte = {lat:	52.531677, lng:	13.381777};
-  // The map, centered at Uluru
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 10,
-    center: mitte,
-  });
-  // The marker, positioned at Berlin Mitte
-  const marker = new google.maps.Marker({
-    position: mitte,
-    map: map,
-	title: "Berlin Mitte",
-  });
-}
-
 //Aktualisiert die Karte in dem ein Marker fuer jeden Kontakt hinzugefuegt wird
 function loadMarkers() {
 	for (let contact of contacts) {
@@ -395,7 +393,7 @@ function setMarker(contact, visible){
 		var url = "https://maps.googleapis.com/maps/api/geocode/json?";
 		url = url + "address=" + address(contact);
 		url = url +"&key=AIzaSyCiWbb2a4ZQMkVw1xJ5U2WMPvomDWeCZHY";
-		xhr.open("GET", url, true);
+		xhr.open("GET", url, false);
 		// diese Funktion wird ausgefuehrt, wenn ein Fehler auftritt
 		xhr.onerror = function(){
 			alert("Connecting to server with " + url + " failed!\n");
@@ -433,7 +431,7 @@ function setMarker(contact, visible){
 //Der Marker wird allerdings erst nach einem Aufruf von setMarker(contact) oder loadMarkers angezeigt
 function readMarker(contact){
 	contact.marker = new google.maps.Marker({
-		position: {lat: contact.lat, lng: contact.lng},
+		position: {lat: Number(contact.lat), lng: Number(contact.lng)},
 		title: fullname(contact)
 	});
 	contact.markerGenerated = true;
@@ -466,10 +464,9 @@ addNewButton.addEventListener("click", (e) => {
 
 //Fuegt den durch das addForm spezifiezierten Kontakt hinzu
 addButtons.addEventListener("click", (e) => {
-	console.log(contacts);
-	let owner = currUser;
+	let owner = currUser.username;
 	if(currUser.isAdmin){
-		owner = users[addForm.owner.selectedIndex];
+		owner = users[addForm.owner.selectedIndex].username;
 	}
 
 	let firstname =	addForm.firstname.value;
@@ -484,7 +481,7 @@ addButtons.addEventListener("click", (e) => {
 
 	let contactInput = new Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner);
 
-	if(userOnlyAddresses && owner!==currUser){
+	if(userOnlyAddresses && owner!==currUser.username){
 		setMarker(contactInput, false);
 	}else{
 		setMarker(contactInput);
@@ -494,10 +491,24 @@ addButtons.addEventListener("click", (e) => {
 	contacts.push(contactInput);
 
 	addButtons.remove();
+	
+	console.log(contactInput);
 
 	let httpRequest = new XMLHttpRequest();
 	let url = "http://localhost:3000/contacts";
-
+	/*url +=  "?firstname=\""+contactInput.firstname+"\""
+		+	"&lastname=\""+contactInput.lastname+"\""
+		+	"&street=\""+contactInput.street+"\""
+		+	"&streetnr="+contactInput.streetnr
+		+	"&zip="+contactInput.zip
+		+	"&city=\""+contactInput.city+"\""
+		+	"&state=\""+contactInput.state+"\""
+		+	"&country=\""+contactInput.country+"\""
+		+	"&isPrivate="+contactInput.isPrivate
+		+	"&owner=\""+contactInput.owner+"\""
+		+	"&lat="+contactInput.lat
+		+	"&lng="+contactInput.lng;*/
+	
 	httpRequest.open("POST", url, true);
 	httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
@@ -508,11 +519,11 @@ addButtons.addEventListener("click", (e) => {
 	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
 		if(httpRequest.readyState == 4 && httpRequest.status == 201) {
 			contacts[contacts.length-1].id = JSON.parse(httpRequest.responseText)["id"];
-			console.log(contacts[contacts.length-1].id);
+			//console.log(contacts[contacts.length-1]);
 		}
 	};
 	function sendHTTPResquest() {
-		httpRequest.send(`firstname=${firstname}&lastname=${lastname}&street=${street}&streetnr=${streetnr}&zip=${zip}&city=${city}&state=${state}&country=${country}&isPrivate=${isPrivate}&owner=${owner.username}&lat=${contactInput.lat}&lng=${contactInput.lng}`);
+		httpRequest.send(`firstname=${firstname}&lastname=${lastname}&street=${street}&streetnr=${streetnr}&zip=${zip}&city=${city}&state=${state}&country=${country}&isPrivate=${isPrivate}&owner=${owner}&lat=${contactInput.lat}&lng=${contactInput.lng}`);
 		addScreen.style.display = "none";
 		mainScreen.style.display = "block";
 		header.style.display = "block";

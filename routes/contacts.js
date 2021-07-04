@@ -56,7 +56,7 @@ router.post('/', function(req, res, next) {
   console.log(req.body);
   contacts.push(new Contact(contacts.length, firstname, lastname, street, streetnr, zip,
     city, state, country, isPrivate, owner, lat, lng));
-  res.status(201).json({"id" : contacts.length-1});
+  res.status(201).json({"id" : contacts.length});
   res.end();
 });
 
