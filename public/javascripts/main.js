@@ -227,6 +227,10 @@ logoutButton.addEventListener("click", (e) => {
   	header.style.display = "none";
  	loginScreen.style.display = "block";
 
+	for(let contact of contacts){
+		if(contact.markerGenerated)
+		contact.marker.setMap(null);
+	}
 	contacts = [];
 
 	userOnlyAddresses = true;
@@ -584,7 +588,7 @@ updateButton.addEventListener("click", (e) => {
 	updateButtons.remove();
 
 	let httpRequest = new XMLHttpRequest();
-	let url = "http://localhost:3000/contacts/" + selectedContact.id;
+	let url = "http://localhost:3000/contacts/" + selectedContact._id;
 
 	httpRequest.open("PUT", url, true);
 	httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -633,7 +637,8 @@ deleteButton.addEventListener("click", (e) => {
 	updateButtons.remove();
 
 	let httpRequest = new XMLHttpRequest();
-	let url = "http://localhost:3000/contacts/" + selectedContact.id;
+	let url = "http://localhost:3000/contacts/" + selectedContact._id;
+	console.log("Delete Contact On "+url);
 
 	httpRequest.open("DELETE", url, true);
 	httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

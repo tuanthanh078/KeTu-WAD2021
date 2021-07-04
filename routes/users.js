@@ -15,7 +15,7 @@ router.post('/', function(req, res, next) {
   MongoClient.connect( url, {useUnifiedTopology: true}, function(err,client){
 	  if(err) throw err;
 	  var db = client.db("advizDB");
-	  db.collection("users").findOne({username: "admina"}, function(err, result) {
+	  db.collection("users").findOne({username: username}, function(err, result) {
 		if(err){
 			throw(err);
 		}
