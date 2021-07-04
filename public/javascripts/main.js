@@ -80,20 +80,7 @@ contact4.id = 4;
 
 //Alle Kontakte
 //var contacts = [contact1, contact2, contact3, contact4];
-var contacts;
-
-//Load contacts from server if login was succesful
-let url = "http://localhost:3000/contacts";
-let httpRequest = new XMLHttpRequest();
-httpRequest.open("GET", url, true);
-httpRequest.onerror = function(){
-	console.log("Connecting to server with " + url + " failed!\n");
-};
-httpRequest.onload = function() {
-	contacts = JSON.parse(this.response);
-	console.log(contacts);
-};
-httpRequest.send();
+var contacts = [];
 
 //Aktuell angemeldeter Nutzer
 var currUser;
@@ -191,6 +178,26 @@ loginButton.addEventListener("click", (e) => {
 				if(!currUser.isAdmin){
 					ownerSelect.remove();
 				}
+				
+				//Load contacts from server if login was succesful
+				let contactsurl = "http://localhost:3000/contacts";
+				let contactsRequest = new XMLHttpRequest();
+				contactsRequest.open("GET", contactsurl, true);
+				contactsRequest.onerror = function(){
+					console.log("Connecting to server with " + contactsurl + " failed!\n");
+				};
+				contactsRequest.onload = function() {
+					contacts = JSON.parse(this.response);
+					
+					console.log(contacts);
+					
+					for(let contact of contacts){
+						readMarker(contact);
+					}
+				};
+				contactsRequest.send();
+				
+				setTimeout(function(){reloadAddressListUser();});
 		}
 	};
 
@@ -235,8 +242,9 @@ document.getElementById("show-all-button").addEventListener("click", (e) => {
 function reloadAddressList(){
 	addressList.innerHTML = "";
 	for (let contact of contacts) {
-		if(contact.owner === currUser){
+		if(contact.owner === currUser.username){
 			addToAddressList(contact);
+			setMarker(contact);
 		}
 	}
 }
@@ -247,7 +255,7 @@ function reloadAddressListUser() {
 
 	if(userOnlyAddresses === false){
 		for(let contact of contacts){
-			if(contact.owner !== currUser && (currUser.isAdmin === true || contact.isPrivate === false)){
+			if(contact.owner !== currUser.username && (currUser.isAdmin === true || contact.isPrivate === false)){
 				setMarker(contact, false);
 			}
 		}
@@ -262,13 +270,14 @@ function reloadAddressListAll(){
 	reloadAddressList();
 
 	for(let contact of contacts){
-		if(contact.owner !== currUser && (currUser.isAdmin === true || contact.isPrivate === false)){
+		if(contact.owner !== currUser.username && (currUser.isAdmin === true || contact.isPrivate === false)){
 			addToAddressList(contact);
 			if(userOnlyAddresses === true){
 				setMarker(contact);
 			}
 		}
 	}
+	
 	userOnlyAddresses = false;
 }
 
@@ -359,7 +368,7 @@ function initMap() {
 //Aktualisiert die Karte in dem ein Marker fuer jeden Kontakt hinzugefuegt wird
 function loadMarkers() {
 	for (let contact of contacts) {
-		if(contact.owner === currUser){
+		if(contact.owner === currUser.username){
 			setMarker(contact);
 		}
 	}
@@ -369,6 +378,7 @@ function loadMarkers() {
 //Gibt entsprechenden alert wenn kein Marker erstellt werden konnte
 //Wird visible auf true gesetzt oder nicht spezifiziert, wird der Marker sobald er erstellt wurde auf der Karte angezeigt
 function setMarker(contact, visible){
+	let selMap = null;
 	if(visible === true || visible === undefined){
 		selMap = map;
 	}
@@ -418,6 +428,15 @@ function setMarker(contact, visible){
 		}
 		xhr.send();
 	}
+}
+//Ertellt einen Marker fuer einen Kontakt mit bereits vorgegebenen Koordinaten
+//Der Marker wird allerdings erst nach einem Aufruf von setMarker(contact) oder loadMarkers angezeigt
+function readMarker(contact){
+	contact.marker = new google.maps.Marker({
+		position: {lat: contact.lat, lng: contact.lng},
+		title: fullname(contact)
+	});
+	contact.markerGenerated = true;
 }
 
 //Wechselt in den add Contact screen
@@ -539,6 +558,8 @@ updateButton.addEventListener("click", (e) => {
 		selectedContact.marker.setMap(null);
 		selectedContact.markerGenerated = false;
 		setMarker(selectedContact);
+	}else if(selectedContact.markerGenerated){
+		selectedContact.marker.title = fullname(selectedContact);
 	}
 
 	if(userOnlyAddresses === true){
