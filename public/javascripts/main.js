@@ -491,8 +491,6 @@ addButtons.addEventListener("click", (e) => {
 	contacts.push(contactInput);
 
 	addButtons.remove();
-	
-	console.log(contactInput);
 
 	let httpRequest = new XMLHttpRequest();
 	let url = "http://localhost:3000/contacts";
@@ -507,8 +505,11 @@ addButtons.addEventListener("click", (e) => {
 
 	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
 		if(httpRequest.readyState == 4 && httpRequest.status == 201) {
-			contacts[contacts.length-1]._id = JSON.parse(httpRequest.responseText)["_id"];
+		//	contacts[contacts.length-1]._id = JSON.parse(httpRequest.responseText)["_id"];
 			//console.log(contacts[contacts.length-1]);
+			console.log(this.response);
+			contactInput._id = JSON.parse(this.response);
+			console.log(contacts[contacts.length-1]);
 		}
 	};
 	function sendHTTPResquest() {

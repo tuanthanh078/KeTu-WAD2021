@@ -36,10 +36,9 @@ router.post('/', function(req, res, next) {
 			lng: req.body.lng
 		}, function(err, result){
 			if(err)throw(err);
-			console.log(result);
 			console.log("Contact "+fullname(req.body)+" inserted");
 			client.close();
-			res.status(201).json({"_id" : result._id});
+			res.status(201).send(result.ops[0]._id);
 			res.end();
 		}
 	);
