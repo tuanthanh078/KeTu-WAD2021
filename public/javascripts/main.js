@@ -51,11 +51,6 @@ function User(username, isAdmin){
 	addForm.owner.appendChild(option);
 }
 
-var admina = new User("admina", true);
-var normalo = new User("normalo", false);
-//Alle hardcoded nutzer (admina, normalo)
-var users = [admina, normalo];
-
 function Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner) {
 	this.id = null;
 	this.firstname = firstname;
@@ -166,51 +161,71 @@ loginButton.addEventListener("click", (e) => {
 
 	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
 		if(httpRequest.readyState == 4 && httpRequest.status == 200) {
-				//Setze Login war korrekt
-				loginCorrect = true;
+			//Setze Login war korrekt
+			loginCorrect = true;
 
-				// let pojo = JSON.parse(httpRequest.responseText);
-				//Setze aktuellen User
-				currUser = JSON.parse(httpRequest.responseText);
+			// let pojo = JSON.parse(httpRequest.responseText);
+			//Setze aktuellen User
+			currUser = JSON.parse(httpRequest.responseText);
 				
-				/*
-				if (currUser.isAdmin)
-					currUser = admina;
-				else
-					currUser = normalo;
-				*/
-				currUser = new User(currUser.username, currUser.isAdmin);
-
+			/*
+			if (currUser.isAdmin)
+				currUser = admina;
+			else
+				currUser = normalo;
+			*/
+			currUser = new User(currUser.username, currUser.isAdmin);
 				//Wechsel zu mainScreen
-				loginScreen.style.display = "none";
-				mainScreen.style.display = "block";
-				//Zeige Header mit Begruessung und Logout Button
-				header.style.display = "block";
-				headerInfo.innerHTML = "Hello "+currUser.username+"!";
-				//Entferne Admin Felder fuer Normalo
-				if(!currUser.isAdmin){
-					ownerSelect.remove();
+			loginScreen.style.display = "none";
+			mainScreen.style.display = "block";
+			//Zeige Header mit Begruessung und Logout Button
+			header.style.display = "block";
+			headerInfo.innerHTML = "Hello "+currUser.username+"!";
+			
+			//lade alle contakte bei erfolgreichem einloggen
+			let contactsurl = "http://localhost:3000/contacts";
+			let contactsRequest = new XMLHttpRequest();
+			contactsRequest.open("GET", contactsurl, true);
+			contactsRequest.onerror = function(){
+				console.log("Connecting to server with " + contactsurl + " failed!\n");
+			};
+			contactsRequest.onload = function() {
+				contacts = JSON.parse(this.response);
+				
+				console.log(contacts);
+				
+				for(let contact of contacts){
+					readMarker(contact);
 				}
 				
-				//Load contacts from server if login was succesful
-				let contactsurl = "http://localhost:3000/contacts";
-				let contactsRequest = new XMLHttpRequest();
-				contactsRequest.open("GET", contactsurl, true);
-				contactsRequest.onerror = function(){
-					console.log("Connecting to server with " + contactsurl + " failed!\n");
+				reloadAddressListUser();
+			};
+			contactsRequest.send();
+			
+			if(!currUser.isAdmin){
+				//Entferne owner select fuer nicht admins
+				ownerSelect.remove();
+			}else{
+				//GET fuer alle usernames vom server
+				//um owner select options fuer admin zu erstellen
+				let usersurl = "http://localhost:3000/users";
+				let userRequest = new XMLHttpRequest();
+				userRequest.open("GET", usersurl, true);
+				userRequest.onerror = function(){
+					console.log("Connecting to server with " + usersurl + " failed!\n");
 				};
-				contactsRequest.onload = function() {
-					contacts = JSON.parse(this.response);
-					
-					console.log(contacts);
-					
-					for(let contact of contacts){
-						readMarker(contact);
+				userRequest.onload = function(){
+					let users = JSON.parse(this.response);
+				
+					console.log(users);
+				
+					for(let user of users){
+						var option = document.createElement("option");
+						option.appendChild(document.createTextNode(username));
+						addForm.owner.appendChild(option);
 					}
-					
-					reloadAddressListUser();
-				};
-				contactsRequest.send();
+				}
+			}
 		}
 	};
 
@@ -329,22 +344,23 @@ function addToAddressList(contact){
 		addForm.private.checked = contact.isPrivate;
 
 		//Setzte den korrekten owner des ausgewaehlten Kontakts
-		if(currUser.isAdmin){
+		/*if(currUser.isAdmin){
 			for(let i = 0; i<users.length; i++){
 				if(contact.owner === users[i]){
 					addForm.owner.selectedIndex = i;
 					break;
 				}
 			}
-			/*for(let i = 0; i<users.length; i++){
+			for(let i = 0; i<users.length; i++){
 				for(let userContact of users[i].contacts){
 					if(userContact === contact){
 						addForm.owner.selectedIndex = i;
 						break;
 					}
 				}
-			}*/
-		}
+			}
+		}*/
+		addForm.owner.value = contact.owner;
 
 		mainScreen.style.display = "none";
 		header.style.display = "none";
@@ -470,7 +486,7 @@ addNewButton.addEventListener("click", (e) => {
 addButtons.addEventListener("click", (e) => {
 	let owner = currUser.username;
 	if(currUser.isAdmin){
-		owner = users[addForm.owner.selectedIndex].username;
+		owner = addForm.owner.value;
 	}
 
 	let firstname =	addForm.firstname.value;
@@ -500,18 +516,6 @@ addButtons.addEventListener("click", (e) => {
 
 	let httpRequest = new XMLHttpRequest();
 	let url = "http://localhost:3000/contacts";
-	/*url +=  "?firstname=\""+contactInput.firstname+"\""
-		+	"&lastname=\""+contactInput.lastname+"\""
-		+	"&street=\""+contactInput.street+"\""
-		+	"&streetnr="+contactInput.streetnr
-		+	"&zip="+contactInput.zip
-		+	"&city=\""+contactInput.city+"\""
-		+	"&state=\""+contactInput.state+"\""
-		+	"&country=\""+contactInput.country+"\""
-		+	"&isPrivate="+contactInput.isPrivate
-		+	"&owner=\""+contactInput.owner+"\""
-		+	"&lat="+contactInput.lat
-		+	"&lng="+contactInput.lng;*/
 	
 	httpRequest.open("POST", url, true);
 	httpRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -523,7 +527,7 @@ addButtons.addEventListener("click", (e) => {
 
 	httpRequest.onreadystatechange = function() {//Call a function when the state changes.
 		if(httpRequest.readyState == 4 && httpRequest.status == 201) {
-			contacts[contacts.length-1].id = JSON.parse(httpRequest.responseText)["id"];
+			contacts[contacts.length-1]._id = JSON.parse(httpRequest.responseText)["_id"];
 			//console.log(contacts[contacts.length-1]);
 		}
 	};
@@ -540,6 +544,7 @@ addButtons.addEventListener("click", (e) => {
 //Aktuellisiert den ausgewaehlten Kontakt durch die im addForm
 //gewaehlten spezifikationen
 updateButton.addEventListener("click", (e) => {
+	e.preventDefault();
 
 	var addressChanged = false;
 	if(selectedContact.street != addForm.street.value
@@ -562,8 +567,10 @@ updateButton.addEventListener("click", (e) => {
 	selectedContact.state = addForm.state.value;
 	selectedContact.country = addForm.country.value;
 	selectedContact.isPrivate = addForm.private.checked;
+	
 	if(currUser.isAdmin === true){
-		selectedContact.owner = users[addForm.owner.selectedIndex];
+		selectedContact.owner = addForm.owner.value;
+		//selectedContact.owner = users[addForm.owner.selectedIndex];
 		if(selectedContact.owner !== currUser && userOnlyAddresses){
 			selectedContact.marker.setMap(null);
 		}

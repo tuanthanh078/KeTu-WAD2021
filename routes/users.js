@@ -32,4 +32,25 @@ router.post('/', function(req, res, next) {
   });
 });
 
+router.get('/', function(req, res, next){
+	console.log("[ROUTER users.js] get");
+	
+	MongoClient.connect( url, {useUnifiedTopology: true}, function(err,client){
+		if(err) throw err;
+		var db = client.db("advizDB");
+		db.collection("users").find({}).toArray(function(err, result){
+			if(err) throw err;
+			
+			var users = [];
+			for(let user of result){
+				users.push(user.username);
+			}
+			res.status(200).json(users);
+			
+			client.close();
+			res.end();
+		});
+	});
+});
+
 module.exports = router;
