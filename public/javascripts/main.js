@@ -39,16 +39,13 @@ function initMap() {
   });
 }
 
-// var isLoggedIn = false;
-// var isAdmina = false;
-
 function User(username, isAdmin){
 	this.username = username;
 	this.isAdmin = isAdmin;
 
-	var option = document.createElement("option");
-	option.appendChild(document.createTextNode(username));
-	addForm.owner.appendChild(option);
+	//var option = document.createElement("option");
+	//option.appendChild(document.createTextNode(username));
+	//addForm.owner.appendChild(option);
 }
 
 function Contact(firstname, lastname, street, streetnr, zip, city, state, country, isPrivate, owner) {
@@ -175,6 +172,7 @@ loginButton.addEventListener("click", (e) => {
 				currUser = normalo;
 			*/
 			currUser = new User(currUser.username, currUser.isAdmin);
+			console.log("Logged in as: "+currUser.username + ", Admin: " + currUser.isAdmin);
 				//Wechsel zu mainScreen
 			loginScreen.style.display = "none";
 			mainScreen.style.display = "block";
@@ -221,10 +219,11 @@ loginButton.addEventListener("click", (e) => {
 				
 					for(let user of users){
 						var option = document.createElement("option");
-						option.appendChild(document.createTextNode(username));
+						option.appendChild(document.createTextNode(user));
 						addForm.owner.appendChild(option);
 					}
 				}
+				userRequest.send();
 			}
 		}
 	};
@@ -257,7 +256,12 @@ logoutButton.addEventListener("click", (e) => {
 	for(let contact of contacts){
 		setMarker(contact, false);
 	}
-
+	
+	var select = addForm.owner;
+	var length = select.options.length;
+	for (i = length-1; i >= 0; i--) {
+		select.options[i] = null;
+	}
 
 	setValue(loginForm.password, "");
 	loginButton.disabled = true;
@@ -325,7 +329,7 @@ function addToAddressList(contact){
 
 	addressLi.addEventListener("click", (e) => {
 
-		if(currUser.isAdmin == false && contact.owner.username !== currUser.username){
+		if(currUser.isAdmin == false && contact.owner !== currUser.username){
 			addForm.appendChild(backButton);
 		}else{
 			selectedContact = contact;
@@ -343,24 +347,8 @@ function addToAddressList(contact){
 		setValue(addForm.country, contact.country);
 		addForm.private.checked = contact.isPrivate;
 
-		//Setzte den korrekten owner des ausgewaehlten Kontakts
-		/*if(currUser.isAdmin){
-			for(let i = 0; i<users.length; i++){
-				if(contact.owner === users[i]){
-					addForm.owner.selectedIndex = i;
-					break;
-				}
-			}
-			for(let i = 0; i<users.length; i++){
-				for(let userContact of users[i].contacts){
-					if(userContact === contact){
-						addForm.owner.selectedIndex = i;
-						break;
-					}
-				}
-			}
-		}*/
-		addForm.owner.value = contact.owner;
+		if(currUser.isAdmin)
+			addForm.owner.value = contact.owner;
 
 		mainScreen.style.display = "none";
 		header.style.display = "none";
@@ -373,14 +361,6 @@ function addToAddressList(contact){
 function getOwner(contact){
 	console.log("!Deprecated method called: getOwner(contact)!");
 	return contact.owner;
-	/*for(let i = 0; i<users.length; i++){
-		for(let userContact of users[i].contacts){
-			if(userContact === contact){
-				return users[i];
-			}
-		}
-	}
-	*/
 }
 
 //Aktualisiert die Karte in dem ein Marker fuer jeden Kontakt hinzugefuegt wird
@@ -558,8 +538,6 @@ updateButton.addEventListener("click", (e) => {
 	selectedContact.firstname = addForm.firstname.value;
 	selectedContact.lastname = addForm.lastname.value;
 
-	selectedContact.marker.setTitle(fullname(selectedContact));
-
 	selectedContact.street = addForm.street.value;
 	selectedContact.streetnr = addForm.streetnr.value;
 	selectedContact.zip = addForm.zip.value;
@@ -568,14 +546,14 @@ updateButton.addEventListener("click", (e) => {
 	selectedContact.country = addForm.country.value;
 	selectedContact.isPrivate = addForm.private.checked;
 	
-	if(currUser.isAdmin === true){
+	if(currUser.isAdmin){
 		selectedContact.owner = addForm.owner.value;
 		//selectedContact.owner = users[addForm.owner.selectedIndex];
-		if(selectedContact.owner !== currUser && userOnlyAddresses){
+		if(selectedContact.owner !== currUser.username && userOnlyAddresses){
 			selectedContact.marker.setMap(null);
 		}
 	}else{
-		selectedContact.owner = currUser;
+		selectedContact.owner = currUser.username;
 	}
 
 	if(addressChanged === true){
@@ -584,6 +562,7 @@ updateButton.addEventListener("click", (e) => {
 		setMarker(selectedContact);
 	}else if(selectedContact.markerGenerated){
 		selectedContact.marker.title = fullname(selectedContact);
+		selectedContact.marker.setTitle(fullname(selectedContact));
 	}
 
 	if(userOnlyAddresses === true){
@@ -610,7 +589,7 @@ updateButton.addEventListener("click", (e) => {
 		}
 	};
 	function sendHTTPResquest() {
-		httpRequest.send(`firstname=${selectedContact.firstname}&lastname=${selectedContact.lastname}&street=${selectedContact.street}&streetnr=${selectedContact.streetnr}&zip=${selectedContact.zip}&city=${selectedContact.city}&state=${selectedContact.state}&country=${selectedContact.country}&isPrivate=${selectedContact.isPrivate}&owner=${selectedContact.owner.username}&lat=${selectedContact.lat}&lng=${selectedContact.lng}`);
+		httpRequest.send(`firstname=${selectedContact.firstname}&lastname=${selectedContact.lastname}&street=${selectedContact.street}&streetnr=${selectedContact.streetnr}&zip=${selectedContact.zip}&city=${selectedContact.city}&state=${selectedContact.state}&country=${selectedContact.country}&isPrivate=${selectedContact.isPrivate}&owner=${selectedContact.owner}&lat=${selectedContact.lat}&lng=${selectedContact.lng}`);
 		addScreen.style.display = "none";
 		mainScreen.style.display = "block";
 		header.style.display = "block";
@@ -627,13 +606,6 @@ deleteButton.addEventListener("click", (e) => {
 			contacts.splice(i,1);
 		}
 	}
-
-	/*let owner = getOwner(selectedContact);
-	for(let i = 0; i<owner.contacts.length; i++){
-		if(owner.contacts[i] == selectedContact){
-			owner.contacts.splice(i,1);
-		}
-	}*/
 
 	if(userOnlyAddresses === true){
 		reloadAddressListUser();
