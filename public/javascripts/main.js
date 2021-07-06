@@ -345,7 +345,10 @@ function addToAddressList(contact){
 		setValue(addForm.city, contact.city);
 		setValue(addForm.state, contact.state);
 		setValue(addForm.country, contact.country);
-		addForm.private.checked = contact.isPrivate;
+		if(contact.isPrivate == true)
+			addForm.private.checked = true;
+		else
+			addForm.private.checked = false;
 
 		if(currUser.isAdmin)
 			addForm.owner.value = contact.owner;
